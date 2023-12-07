@@ -15,6 +15,10 @@ EOF
 exit 1
 fi
 
+if command -v shellcheck ; then
+	shellcheck "$0"
+fi
+
 echo "pulling latest version"
 git pull
 
@@ -24,16 +28,23 @@ if [[ ! -d venv ]] ; then
 fi
 
 echo "activating virtual environment"
+# shellcheck disable=SC1091
 source venv/bin/activate
+
+[[ -e .env ]]
+# shellcheck disable=SC1091
+. .env
+[[ "$DISCORD_TOKEN" ]]
+[[ "$DISCORD_GUILD" ]]
+export DISCORD_TOKEN
+export DISCORD_GUILD
 
 echo "installing discord bot module"
 pip install .
 
 echo "running main.py"
-#python main.py
 python -m discord_bot
 
-# TODO different branch or build artifacts or release artifacts
 echo "saving changes to git"
 git add .
 git commit -m "[$0]: updates"

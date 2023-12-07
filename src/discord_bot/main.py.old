@@ -1,0 +1,86 @@
+from os import getenv
+
+from discord import Intents
+from discord.ext.commands import Bot
+from discord.utils import setup_logging
+from discord.utils import find
+from discord import Member
+from discord import Guild
+from structlog import get_logger
+from typeguard import typechecked
+
+from .hello import hellomain
+from .types import P
+
+logger = get_logger()
+setup_logging()
+
+@typechecked
+class CustomClient(Bot):
+
+    @typechecked
+    def __init__(self, guild:str, *args:P.args, **kwargs:P.kwargs):
+        super().__init__(*args, **kwargs)
+        self.guild = guild
+
+    @typechecked
+    def _find_guild(self, g:Guild)->bool:
+        return g.name == self.guild
+
+    @typechecked
+    async def on_ready(self)->None:
+        await logger.ainfo('%s has connected to Discord!', self.user)
+
+        guild:Guild = find(self._find_guild, self.guilds)
+        await logger.ainfo('Guild: %s(id: %s)', guild.name, guild.id)
+        
+        if guild.members:
+            await logger.ainfo('Guild Members:')
+            for member in guild.members:
+                await logger.ainfo('- %s', member.name)
+
+    @typechecked
+    async def on_member_join(self, member:Member)->None:
+        await logger.ainfo('Member joined: %s', member.name)
+        await member.create_dm()
+        await member.dm_channel.send(f'Hi {member.name}, welcome to my Discord server!')
+
+    @typechecked
+    async def on_message(self, message:str)->None:
+        if message.author == self.user:
+            return
+
+        brooklyn_99_quotes:List[str] = [
+            'I\'m the human form of the 💯 emoji.',
+            'Bingpot!',
+            (
+                'Cool. Cool cool cool cool cool cool cool, '
+                'no doubt no doubt no doubt no doubt.'
+            ),
+        ]
+
+        if message.content == '99!':
+            response:str = random.choice(brooklyn_99_quotes)
+            await message.channel.send(response)
+
+    @typechecked
+    async def on_error(self, event:str, *args:P.args, **kwargs:P.kwargs)->None:
+        with open('err.log', 'a') as f:
+            if event == 'on_message':
+                f.write(f'Unhandled message: {args[0]}\n')
+            else:
+                raise
+
+
+@typechecked
+async def bot(token:str, guild:str)->None:
+    intents:Intents = Intents.default()
+    client:Client = CustomClient(guild, intents=intents)
+    return await client.start(token)
+
+@hellomain(logger)
+@typechecked
+async def main()->None:
+    TOKEN:str = getenv('DISCORD_TOKEN')
+    GUILD:str = getenv('DISCORD_GUILD')
+    return await bot(TOKEN, GUILD)
