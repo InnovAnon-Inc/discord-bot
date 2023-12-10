@@ -23,12 +23,19 @@ from .types import P
 logger = get_logger()
 setup_logging()
 
+@typechecked
 class Buttons(View):
+    @typechecked
     def __init__(self, *, timeout=180):
         super().__init__(timeout=timeout)
 
 @typechecked
 async def bot(token:str, guild:str, rest_key:str)->None:
+    """
+    implements the business logic for the 0xpepesplay project
+    by interacting with the REST API
+    """
+    
     intents:Intents         = Intents.default()
     intents.members         = True
     # allow to get commands from GC
@@ -46,18 +53,27 @@ async def bot(token:str, guild:str, rest_key:str)->None:
 
     @bot.event
     @typechecked
-    async def on_command_error(ctx, error)->None:
+    async def on_command_error(ctx, error:Exception)->None:
+        """
+        send a FYEO to the user and log the exception
+        """
+
         if isinstance(error, CheckFailure):
-            await ctx.send(error)
+            await ctx.send(error, ephemeral=True)
         await logger.aexception(error)
 
 
-    # TODO not working
     @bot.command(name='shutdown')
     @has_role('admin')
     @typechecked
     async def shutdown(ctx)->None:
-        await ctx.send('Disconnecting bot', ephemeral=True) # visible only to user
+        """
+        gracefully terminate the application.
+
+        see run.sh
+        """
+
+        await ctx.send('Disconnecting bot')
         return await bot.close()
 
 
@@ -96,9 +112,14 @@ async def bot(token:str, guild:str, rest_key:str)->None:
 
     return await bot.start(token)
 
+
 @hellomain(logger)
 @typechecked
 async def main()->None:
+    """
+    read config vars from env and start the bot
+    """
+
     TOKEN:str = getenv('DISCORD_TOKEN')
     GUILD:str = getenv('DISCORD_GUILD')
     RESTK:str = getenv('SUPABASE_KEY')
