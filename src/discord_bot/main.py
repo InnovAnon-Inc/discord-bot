@@ -8,7 +8,11 @@ from discord.ext.commands import Bot
 from discord.ext.commands import has_role
 from discord.utils import setup_logging
 from discord.utils import find
+from discord.ui import Button
+from discord import ButtonStyle
+from discord import Interaction
 from discord import Member
+from discord.ui import View
 from structlog import get_logger
 from typeguard import typechecked
 from discord.ext.commands.errors import CheckFailure
@@ -19,10 +23,18 @@ from .types import P
 logger = get_logger()
 setup_logging()
 
+class Buttons(View):
+    def __init__(self, *, timeout=180):
+        super().__init__(timeout=timeout)
+
 @typechecked
-async def bot(token:str, guild:str)->None:
-    intents:Intents = Intents.default()
-    bot:Bot = Bot(intents=intents, command_prefix='!')
+async def bot(token:str, guild:str, rest_key:str)->None:
+    intents:Intents         = Intents.default()
+    intents.members         = True
+    # allow to get commands from GC
+    intents.message_content = True #v2
+    bot    :Bot             = Bot(intents=intents, command_prefix='!')
+
     
     @bot.event
     @typechecked
@@ -31,6 +43,7 @@ async def bot(token:str, guild:str)->None:
         # TODO get list of games from rest api
     # TODO admin command to reload list of games
 
+
     @bot.event
     @typechecked
     async def on_command_error(ctx, error)->None:
@@ -38,27 +51,48 @@ async def bot(token:str, guild:str)->None:
             await ctx.send(error)
         await logger.aexception(error)
 
+
+    # TODO not working
     @bot.command(name='shutdown')
     @has_role('admin')
     @typechecked
     async def shutdown(ctx)->None:
-        await ctx.send('Disconnecting bot')
+        await ctx.send('Disconnecting bot', ephemeral=True) # visible only to user
         return await bot.close()
 
-    @bot.command(name='99')
-    @typechecked
-    async def nine_nine(ctx)->None:
-        brooklyn_99_quotes:List[str] = [
-            'I\'m the human form of the 💯 emoji.',
-            'Bingpot!',
-            (
-                'Cool. Cool cool cool cool cool cool cool, '
-                'no doubt no doubt no doubt no doubt.'
-            ),
-        ]
 
-        response:str = choice(brooklyn_99_quotes)
-        await ctx.send(response)
+    @bot.command(name='games')
+    @typechecked
+    async def games(ctx)->None:
+        """
+        curl 'https://byyokbedkfrhtftkqawp.supabase.co/rest/v1/game?select=*' \
+        -H "apikey: SUPABASE_KEY" \
+        -H "Authorization: Bearer SUPABASE_KEY"
+        """
+
+        # TODO get list of games of rest api
+        # TODO add one button per game
+
+        view:View = Buttons()
+        view.add_item(Button(label="URL Button",style=ButtonStyle.link,url="https://github.com/lykn"))
+        await ctx.send("This message has buttons!",view=view)
+        
+        # TODO button callback function to get access code from rest api
+        # TODO user id : #print(message.author.id)
+
+        #brooklyn_99_quotes:List[str] = [
+        #    'I\'m the human form of the 💯 emoji.',
+        #    'Bingpot!',
+        #    (
+        #        'Cool. Cool cool cool cool cool cool cool, '
+        #        'no doubt no doubt no doubt no doubt.'
+        #    ),
+        #]
+
+        #response:str = choice(brooklyn_99_quotes)
+        #print(message.author.id)
+        #response = f'FYI({message.author.id}): {response}'
+        #await ctx.send(response, ephemeral=True)
 
     return await bot.start(token)
 
@@ -67,4 +101,5 @@ async def bot(token:str, guild:str)->None:
 async def main()->None:
     TOKEN:str = getenv('DISCORD_TOKEN')
     GUILD:str = getenv('DISCORD_GUILD')
-    return await bot(TOKEN, GUILD)
+    RESTK:str = getenv('SUPABASE_KEY')
+    return await bot(TOKEN, GUILD, RESTK)

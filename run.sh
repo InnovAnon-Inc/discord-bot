@@ -36,8 +36,10 @@ source venv/bin/activate
 . .env
 [[ "$DISCORD_TOKEN" ]]
 [[ "$DISCORD_GUILD" ]]
+[[ "$SUPABASE_KEY"  ]]
 export DISCORD_TOKEN
 export DISCORD_GUILD
+export SUPABASE_KEY
 
 echo "installing discord bot module"
 pip install .
