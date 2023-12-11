@@ -49,6 +49,8 @@ async def bot(token:str, guild:str, rest_key:str)->None:
         await logger.ainfo('%s has connected to Discord!', bot.user.name)
         # TODO get list of games from rest api
     # TODO admin command to reload list of games
+    #@tasks.loop(seconds=600.0)
+    #async def update_games(self):
 
 
     @bot.event
@@ -76,15 +78,52 @@ async def bot(token:str, guild:str, rest_key:str)->None:
         await ctx.send('Disconnecting bot')
         return await bot.close()
 
+    # if invite count > 10
+        """
+        ```
+        curl 'https://byyokbedkfrhtftkqawp.supabase.co/rest/v1/user?select=invite_count' \
+        -H "apikey: $SUPABASE_KEY" \
+        -H "Authorization: Bearer $SUPABASE_KEY"
+        ```
+        """
+    # then grant Flight 69 badge
+        """
+        ```
+        curl -X POST 'https://byyokbedkfrhtftkqawp.supabase.co/rest/v1/userbadgelink' \
+        -H "apikey: $SUPABASE_KEY" \
+        -H "Authorization: Bearer $SUPABASE_KEY" \
+        -H "Content-Type: application/json" \
+        -H "Prefer: return=minimal" \
+        -d '{ "some_column": "someValue", "other_column": "otherValue" }'
+
+        ```
+        """
+    # if user has Flight 69 badge
+        """
+        ```
+        curl 'https://byyokbedkfrhtftkqawp.supabase.co/rest/v1/userbadgelink?select=user_id' \
+        -H "apikey: $SUPABASE_KEY" \
+        -H "Authorization: Bearer $SUPABASE_KEY"
+
+        ```
+        """
+    # then grant shadow? role
+
+    # get list of games
+        """
+        ```
+        curl 'https://byyokbedkfrhtftkqawp.supabase.co/rest/v1/game?select=*' \
+        -H "apikey: $SUPABASE_KEY" \
+        -H "Authorization: Bearer $SUPABASE_KEY"
+        ```
+        """
+    # TODO allow user to use `unused_codes` by incrementing `remaining`
+    # TODO allow user to get and (re)generate `secret`
+    # TODO maybe provide a direct link to play the game
 
     @bot.command(name='games')
     @typechecked
     async def games(ctx)->None:
-        """
-        curl 'https://byyokbedkfrhtftkqawp.supabase.co/rest/v1/game?select=*' \
-        -H "apikey: SUPABASE_KEY" \
-        -H "Authorization: Bearer SUPABASE_KEY"
-        """
 
         # TODO get list of games of rest api
         # TODO add one button per game
