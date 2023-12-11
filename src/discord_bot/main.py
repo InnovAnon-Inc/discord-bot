@@ -151,6 +151,28 @@ async def bot(token:str, guild:str, rest_key:str)->None:
 
     return await bot.start(token)
 
+    @typechecked
+    async def get_games() -> List[Dict[str, Any]]:
+        url = 'https://byyokbedkfrhtftkqawp.supabase.co/rest/v1/game?select=*'
+        headers = {
+            'apikey': 'YOUR_API_KEY',
+            'Authorization': 'Bearer YOUR_AUTH_TOKEN'
+        }
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, headers=headers) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    return data
+                else:
+                    raise Exception(f"Failed to get games. HTTP status code: {response.status}")
+
+    @bot.event
+    @typechecked
+    async def on_ready() -> None:
+        await logger.ainfo('%s has connected to Discord!', bot.user.name)
+        games = await get_games()
+
 
 @hellomain(logger)
 @typechecked
