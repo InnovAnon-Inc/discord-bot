@@ -48,7 +48,10 @@ logger = get_logger()
 @trace(logger)
 @typechecked
 async def api_get_users(rest_key:str) -> JSON:
-    return await api_gets(rest_key, 'user')
+    params:PARAMS = {
+        'select': 'name',
+    }
+    return await api_gets(rest_key, 'user', params)
 
 @logerror(logger)
 @trace(logger)
@@ -91,25 +94,38 @@ async def api_rename_user(rest_key:str, name:str, new_name:str) -> str:
 @trace(logger)
 @typechecked
 async def api_get_user_invite_count(rest_key:str, name:str) -> JSON:
+    await logger.adebug('api_get_user_invite_count() 1')
     params:PARAMS = {
         'select': 'invite_count',
     }
-    return await api_get(rest_key, 'user', name, params)
+    await logger.adebug('api_get_user_invite_count() 2')
+    result:JSON = await api_get(rest_key, 'user', name, params)
+    await logger.adebug('api_get_user_invite_count() 3')
+    assert len(result) == 1, f'api_get_user() result len should be 1, but it is {len(result)} {result}'
+    await logger.adebug('api_get_user_invite_count() 4')
+    return result[0]
+
 #@logerror(logger)
 @trace(logger)
 @typechecked
 async def api_get_user_unclaimed_codes(rest_key:str, name:str) -> JSON:
+    await logger.adebug('api_get_user_unclaimed_codes() 1')
     params:PARAMS = {
         'select': 'unclaimed_codes',
     }
-    return await api_get(rest_key, 'user', name, params)
+    await logger.adebug('api_get_user_unclaimed_codes() 2')
+    result:JSON = await api_get(rest_key, 'user', name, params)
+    await logger.adebug('api_get_user_unclaimed_codes() 3')
+    assert len(result) == 1, f'api_get_user() result len should be 1, but it is {len(result)} {result}'
+    await logger.adebug('api_get_user_unclaimed_codes() 4')
+    return result[0]
 
 #@logerror(logger)
 @trace(logger)
 @typechecked
 async def api_set_user_invite_count(rest_key:str, name:str, invite_count:int) -> str:
     data:DATA = {
-        'invite_count': invite_count,
+        'invite_count': str(invite_count),
     }
     return await api_update(rest_key, 'user', name, data)
 
@@ -118,6 +134,6 @@ async def api_set_user_invite_count(rest_key:str, name:str, invite_count:int) ->
 @typechecked
 async def api_set_user_unclaimed_codes(rest_key:str, name:str, unclaimed_codes:int) -> str:
     data:DATA = {
-        'unclaimed_codes': unclaimed_codes,
+        'unclaimed_codes': str(unclaimed_codes),
     }
     return await api_update(rest_key, 'user', name, data)

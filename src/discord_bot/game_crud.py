@@ -47,7 +47,10 @@ logger = get_logger()
 @trace(logger)
 @typechecked
 async def api_get_games(rest_key:str) -> JSON:
-    return await api_gets(rest_key, 'game')
+    params:PARAMS = {
+        'select': 'name',
+    }
+    return await api_gets(rest_key, 'game', params)
 
 @logerror(logger)
 @trace(logger)
