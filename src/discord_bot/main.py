@@ -25,7 +25,11 @@ from .types import P
 
 logger = get_logger()
 setup_logging()
-    
+
+##
+# Game CRUD
+##
+
 @typechecked
 async def api_games(rest_key:str) -> List[Dict[str, Any]]:
     url = 'https://byyokbedkfrhtftkqawp.supabase.co/rest/v1/game?select=*'
@@ -41,6 +45,23 @@ async def api_games(rest_key:str) -> List[Dict[str, Any]]:
                 return data
             else:
                 raise Exception(f"Failed to get games. HTTP status code: {response.status}")
+
+@typechecked
+async def api_game(rest_key:str, name:str) -> List[Dict[str, Any]]:
+    encoded_name = quote(name)
+    url = f'https://byyokbedkfrhtftkqawp.supabase.co/rest/v1/game?name=eq.{encoded_name}&select=*'
+    headers = {
+        'apikey': rest_key,
+        'Authorization': f'Bearer {rest_key}',
+
+    }
+    async with ClientSession() as session:
+        async with session.get(url, headers=headers) as response:
+            if response.status == 200:
+                data = await response.json()
+                return data
+            else:
+                raise Exception(f"Failed to get game. HTTP status code: {response.status}")
 
 @typechecked
 async def api_create_game(rest_key:str, name:str) -> List[Dict[str, Any]]:
@@ -62,27 +83,74 @@ async def api_create_game(rest_key:str, name:str) -> List[Dict[str, Any]]:
             else:
                 raise Exception(f"Failed to create game. HTTP status code: {response.status}")
 
+from urllib.parse import quote
+
 @typechecked
 async def api_delete_game(rest_key:str, name:str) -> List[Dict[str, Any]]:
-    # TODO urlencode
-    url = f'https://byyokbedkfrhtftkqawp.supabase.co/rest/v1/game?name=eq.{name}'
+    encoded_name = quote(name)
+    url = f'https://byyokbedkfrhtftkqawp.supabase.co/rest/v1/game?name=eq.{encoded_name}'
     headers = {
         'apikey': rest_key,
         'Authorization': f'Bearer {rest_key}',
     }
     async with ClientSession() as session:
         async with session.delete(url, headers=headers) as response:
-            if response.status == 201:
+            if response.status == 204:
                 deleted_game = await response.json()
                 return deleted_game
             else:
                 raise Exception(f"Failed to delete game. HTTP status code: {response.status}")
+
+##
+# User CRUD
+##
+
+@typechecked
+async def api_users(rest_key:str) -> List[Dict[str, Any]]:
+    url = 'https://byyokbedkfrhtftkqawp.supabase.co/rest/v1/user?select=*'
+    headers = {
+        'apikey': rest_key,
+        'Authorization': f'Bearer {rest_key}',
+
+    }
+    async with ClientSession() as session:
+        async with session.get(url, headers=headers) as response:
+            if response.status == 200:
+                data = await response.json()
+                return data
+            else:
+                raise Exception(f"Failed to get users. HTTP status code: {response.status}")
+
+@typechecked
+async def api_user(rest_key:str, name:str) -> List[Dict[str, Any]]:
+    encoded_name = quote(name)
+    url = f'https://byyokbedkfrhtftkqawp.supabase.co/rest/v1/user?name=eq.{encoded_name}&select=*'
+    headers = {
+        'apikey': rest_key,
+        'Authorization': f'Bearer {rest_key}',
+
+    }
+    async with ClientSession() as session:
+        async with session.get(url, headers=headers) as response:
+            if response.status == 200:
+                data = await response.json()
+                return data
+            else:
+                raise Exception(f"Failed to get user. HTTP status code: {response.status}")
+
+##
+# Command View
+##
 
 @typechecked
 class Buttons(View):
     @typechecked
     def __init__(self, *, timeout=180):
         super().__init__(timeout=timeout)
+
+##
+# 0xPepesPlay Bot
+##
 
 @typechecked
 async def bot(token:str, guild:str, rest_key:str)->None:
@@ -104,6 +172,10 @@ async def bot(token:str, guild:str, rest_key:str)->None:
     async def on_ready()->None:
         await logger.ainfo('%s has connected to Discord!', bot.user.name)
         # TODO get list of games from rest api
+        #global games_list
+        #await logger.ainfo('on_ready() get the games list')
+        #games_list = await api_games(rest_key)
+        #await logger.ainfo('on_ready() games list: %s', games_list)
     # TODO admin command to reload list of games
     #@tasks.loop(seconds=600.0)
     #async def update_games(self):
@@ -133,6 +205,10 @@ async def bot(token:str, guild:str, rest_key:str)->None:
 
         await ctx.send('Disconnecting bot')
         return await bot.close()
+
+    ##
+    # TODO
+    ##
 
     # if invite count > 10
         """
@@ -180,6 +256,9 @@ async def bot(token:str, guild:str, rest_key:str)->None:
 
 
 
+    ##
+    # Game CRUD
+    ##
 
     @has_role('admin')
     @bot.command(name='create_game')
@@ -203,6 +282,16 @@ async def bot(token:str, guild:str, rest_key:str)->None:
         else:
             await ctx.send("Please provide a name for the game.", ephemeral=True)
 
+    @has_role('admin')
+    @bot.command(name='game')
+    async def game(ctx)->None:
+        name: str = ctx.message.content.split(maxsplit=1)[1] # Extract the name from the command message
+        if name:
+            await ctx.send(f"Getting game {name}", ephemeral=True)
+            my_game = await api_game(rest_key, name)
+            await ctx.send(f"Game '{my_game['name']}' with ID {my_game['id']}!")
+        else:
+            await ctx.send("Please provide a name for the game.", ephemeral=True)
 
     @bot.command(name='games')
     @typechecked
@@ -244,15 +333,40 @@ async def bot(token:str, guild:str, rest_key:str)->None:
 
     return await bot.start(token)
 
-    @bot.event
-    @typechecked
-    async def on_ready() -> None:
-        await logger.ainfo('%s has connected to Discord!', bot.user.name)
-        #global games_list
-        #await logger.ainfo('on_ready() get the games list')
-        #games_list = await api_games(rest_key)
-        #await logger.ainfo('on_ready() games list: %s', games_list)
+    ##
+    # User CRUD
+    ##
 
+    @has_role('admin')
+    @bot.command(name='users')
+    @typechecked
+    async def users(ctx)->None:
+
+        # TODO get list of users of rest api
+        # TODO add one button per user
+
+        await ctx.send('Getting users list', ephemeral=True)
+        users_list:List[Dict[str,Any]] = await api_users(rest_key)
+
+        #global users_list
+        for user in users_list:
+            await logger.ainfo('user: %s', user)
+            await ctx.send(f'user: {user}', ephemeral=True)
+
+    @has_role('admin')
+    @bot.command(name='user')
+    async def user(ctx)->None:
+        name: str = ctx.message.content.split(maxsplit=1)[1] # Extract the name from the command message
+        if name:
+            await ctx.send(f"Getting user {name}", ephemeral=True)
+            my_user = await api_user(rest_key, name)
+            await ctx.send(f"Game '{my_user['name']}' with ID {my_user['id']}!")
+        else:
+            await ctx.send("Please provide a name for the user.", ephemeral=True)
+
+##
+# Simple
+##
 
 @hellomain(logger)
 @typechecked
