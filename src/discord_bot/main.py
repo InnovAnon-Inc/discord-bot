@@ -4,6 +4,7 @@ from random import choice
 from typing import Dict
 from typing import Any
 from aiohttp import ClientSession
+from urllib.parse import quote
 
 from discord import Intents
 from discord import Message
@@ -83,7 +84,6 @@ async def api_create_game(rest_key:str, name:str) -> List[Dict[str, Any]]:
             else:
                 raise Exception(f"Failed to create game. HTTP status code: {response.status}")
 
-from urllib.parse import quote
 
 @typechecked
 async def api_delete_game(rest_key:str, name:str) -> List[Dict[str, Any]]:
@@ -137,6 +137,44 @@ async def api_user(rest_key:str, name:str) -> List[Dict[str, Any]]:
                 return data
             else:
                 raise Exception(f"Failed to get user. HTTP status code: {response.status}")
+
+@typechecked
+async def api_create_user(rest_key:str, name:str) -> List[Dict[str, Any]]:
+    url = 'https://byyokbedkfrhtftkqawp.supabase.co/rest/v1/user'
+    headers = {
+        'apikey': rest_key,
+        'Authorization': f'Bearer {rest_key}',
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal',
+    }
+    data = {
+        'name': name,
+        #'unclaimed_codes' : 10,
+        #`number_invites': 0,
+    }
+    async with ClientSession() as session:
+        async with session.post(url, headers=headers, json=data) as response:
+            if response.status == 201:
+                created_game = await response.json()
+                return created_game
+            else:
+                raise Exception(f"Failed to create game. HTTP status code: {response.status}")
+
+@typechecked
+async def api_delete_user(rest_key:str, name:str) -> List[Dict[str, Any]]:
+    encoded_name = quote(name)
+    url = f'https://byyokbedkfrhtftkqawp.supabase.co/rest/v1/user?name=eq.{encoded_name}'
+    headers = {
+        'apikey': rest_key,
+        'Authorization': f'Bearer {rest_key}',
+    }
+    async with ClientSession() as session:
+        async with session.delete(url, headers=headers) as response:
+            if response.status == 204:
+                deleted_user = await response.json()
+                return deleted_user
+            else:
+                raise Exception(f"Failed to delete user. HTTP status code: {response.status}")
 
 ##
 # Command View
@@ -289,7 +327,8 @@ async def bot(token:str, guild:str, rest_key:str)->None:
         if name:
             await ctx.send(f"Getting game {name}", ephemeral=True)
             my_game = await api_game(rest_key, name)
-            await ctx.send(f"Game '{my_game['name']}' with ID {my_game['id']}!")
+            # TODO
+            #await ctx.send(f"Game '{my_game['name']}' with ID {my_game['id']}!", ephemeral=True)
         else:
             await ctx.send("Please provide a name for the game.", ephemeral=True)
 
@@ -360,10 +399,21 @@ async def bot(token:str, guild:str, rest_key:str)->None:
         if name:
             await ctx.send(f"Getting user {name}", ephemeral=True)
             my_user = await api_user(rest_key, name)
-            await ctx.send(f"Game '{my_user['name']}' with ID {my_user['id']}!")
+            # TODO
+            #await ctx.send(f"Game '{my_user['name']}' with ID {my_user['id']}!")
         else:
             await ctx.send("Please provide a name for the user.", ephemeral=True)
 
+    @has_role('admin')
+    @bot.command(name='create_user')
+    async def create_user(ctx)->None:
+        name: str = ctx.message.content.split(maxsplit=1)[1] # Extract the name from the command message
+        if name:
+            await ctx.send(f"Creating user {name}", ephemeral=True)
+            created_user = await api_create_user(rest_key, name)
+            await ctx.send(f"Game '{created_user['name']}' created with ID {created_user['id']}!")
+        else:
+            await ctx.send("Please provide a name for the user.", ephemeral=True)
 ##
 # Simple
 ##
