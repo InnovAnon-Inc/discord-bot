@@ -70,9 +70,9 @@ async def bot(token:str, guild:str, rest_key:str)->None:
     #games_list:JSON = []
 
     
+    @bot.event
     @logerror(logger)
     @trace(logger)
-    @bot.event
     @typechecked
     async def on_ready()->None:
         await logger.ainfo('%s has connected to Discord!', bot.user.name)
@@ -86,9 +86,9 @@ async def bot(token:str, guild:str, rest_key:str)->None:
     #async def update_games(self):
 
 
+    @bot.event
     @logerror(logger)
     @trace(logger)
-    @bot.event
     @typechecked
     async def on_command_error(ctx, error:Exception)->None:
         """
@@ -110,10 +110,10 @@ async def bot(token:str, guild:str, rest_key:str)->None:
         await logger.aexception(error)
 
 
-    @logerror(logger)
-    @trace(logger)
     @has_role('admin')
     @bot.command(name='shutdown')
+    @logerror(logger)
+    @trace(logger)
     @typechecked
     async def shutdown(ctx)->None:
         """
@@ -160,14 +160,6 @@ async def bot(token:str, guild:str, rest_key:str)->None:
         """
     # then grant shadow? role
 
-    # get list of games
-        """
-        ```
-        curl 'https://byyokbedkfrhtftkqawp.supabase.co/rest/v1/game?select=*' \
-        -H "apikey: $SUPABASE_KEY" \
-        -H "Authorization: Bearer $SUPABASE_KEY"
-        ```
-        """
     # TODO allow user to use `unused_codes` by incrementing `remaining`
     # TODO allow user to get and (re)generate `secret`
     # TODO maybe provide a direct link to play the game
@@ -179,10 +171,10 @@ async def bot(token:str, guild:str, rest_key:str)->None:
     # Game CRUD
     ##
 
-    @logerror(logger)
-    @trace(logger)
     @has_role('admin')
     @bot.command(name='create_game')
+    @logerror(logger)
+    @trace(logger)
     @typechecked
     async def create_game(ctx)->None:
         name:str = await get_arg(ctx)
@@ -194,10 +186,10 @@ async def bot(token:str, guild:str, rest_key:str)->None:
         else:
             await ctx.send("Please provide a name for the game.", ephemeral=True)
 
-    @logerror(logger)
-    @trace(logger)
     @has_role('admin')
     @bot.command(name='delete_game')
+    @logerror(logger)
+    @trace(logger)
     @typechecked
     async def delete_game(ctx)->None:
         name:str = await get_arg(ctx)
@@ -209,10 +201,10 @@ async def bot(token:str, guild:str, rest_key:str)->None:
         else:
             await ctx.send("Please provide a name for the game.", ephemeral=True)
 
-    @logerror(logger)
-    @trace(logger)
     @has_role('admin')
     @bot.command(name='get_game')
+    @logerror(logger)
+    @trace(logger)
     @typechecked
     async def get_game(ctx)->None:
         name:str = await get_arg(ctx)
@@ -223,9 +215,9 @@ async def bot(token:str, guild:str, rest_key:str)->None:
         else:
             await ctx.send("Please provide a name for the game.", ephemeral=True)
 
+    @bot.command(name='get_games')
     @logerror(logger)
     @trace(logger)
-    @bot.command(name='get_games')
     @typechecked
     async def get_games(ctx)->None:
 
@@ -263,10 +255,10 @@ async def bot(token:str, guild:str, rest_key:str)->None:
         #response = f'FYI({message.author.id}): {response}'
         #await ctx.send(response, ephemeral=True)
 
-    @logerror(logger)
-    @trace(logger)
     @has_role('admin')
     @bot.command(name='rename_game')
+    @logerror(logger)
+    @trace(logger)
     @typechecked
     async def rename_game(ctx)->None:
         name, new_name = await get_args(ctx, 2)
@@ -285,10 +277,10 @@ async def bot(token:str, guild:str, rest_key:str)->None:
     # User CRUD
     ##
 
-    @logerror(logger)
-    @trace(logger)
     @has_role('admin')
     @bot.command(name='get_users')
+    @logerror(logger)
+    @trace(logger)
     @typechecked
     async def get_users(ctx)->None:
 
@@ -303,10 +295,10 @@ async def bot(token:str, guild:str, rest_key:str)->None:
             await logger.ainfo('user: %s', user)
             await ctx.send(f'user: {user}', ephemeral=True)
 
-    @logerror(logger)
-    @trace(logger)
     @has_role('admin')
     @bot.command(name='get_user')
+    @logerror(logger)
+    @trace(logger)
     @typechecked
     async def get_user(ctx)->None:
         name:str = await get_arg(ctx)
@@ -318,10 +310,10 @@ async def bot(token:str, guild:str, rest_key:str)->None:
         else:
             await ctx.send("Please provide a name for the user.", ephemeral=True)
 
-    @logerror(logger)
-    @trace(logger)
     @has_role('admin')
     @bot.command(name='create_user')
+    @logerror(logger)
+    @trace(logger)
     @typechecked
     async def create_user(ctx)->None:
         name:str = await get_arg(ctx)
@@ -333,10 +325,10 @@ async def bot(token:str, guild:str, rest_key:str)->None:
         else:
             await ctx.send("Please provide a name for the user.", ephemeral=True)
 
-    @logerror(logger)
-    @trace(logger)
     @has_role('admin')
     @bot.command(name='delete_user')
+    @logerror(logger)
+    @trace(logger)
     @typechecked
     async def delete_user(ctx)->None:
         name:str = await get_arg(ctx)
@@ -348,9 +340,182 @@ async def bot(token:str, guild:str, rest_key:str)->None:
         else:
             await ctx.send("Please provide a name for the user.", ephemeral=True)
 
+    @has_role('admin')
+    @bot.command(name='rename_user')
+    @logerror(logger)
+    @trace(logger)
+    @typechecked
+    async def rename_user(ctx)->None:
+        name, new_name = await get_args(ctx, 2)
+        if not name:
+            await ctx.send("Please provide a name for the user.", ephemeral=True)
+            return
+        if not new_name:
+            await ctx.send("Please provide a new name for the user.", ephemeral=True)
+            return
+        await ctx.send(f"Renaming user {name} to {new_name}", ephemeral=True)
+        my_user:str = await api_rename_user(rest_key, name, new_name)
+        await ctx.send(f"User {my_user} updated", ephemeral=True)
+
+    @has_role('admin')
+    @bot.command(name='get_user_invite_count')
+    @logerror(logger)
+    @trace(logger)
+    @typechecked
+    async def get_user_invite_count(ctx)->None:
+        name:str = await get_arg(ctx)
+        if name:
+            await ctx.send(f"Getting user {name} invite count", ephemeral=True)
+            my_user:JSON = await api_get_user_invite_count(rest_key, name)
+            # TODO unused codes, invite count
+            await ctx.send(f"User '{my_user['name']}' with ID {my_user['id']}!")
+        else:
+            await ctx.send("Please provide a name for the user.", ephemeral=True)
+
+    @has_role('admin')
+    @bot.command(name='get_user_unclaimed_codes')
+    @logerror(logger)
+    @trace(logger)
+    @typechecked
+    async def get_user_unclaimed_codes(ctx)->None:
+        name:str = await get_arg(ctx)
+        if name:
+            await ctx.send(f"Getting user {name} unclaimed codes", ephemeral=True)
+            my_user:JSON = await api_get_user_unclaimed_codes(rest_key, name)
+            # TODO unused codes, invite count
+            await ctx.send(f"User '{my_user['name']}' with ID {my_user['id']}!")
+        else:
+            await ctx.send("Please provide a name for the user.", ephemeral=True)
+
+    @has_role('admin')
+    @bot.command(name='set_user_invite_count')
+    @logerror(logger)
+    @trace(logger)
+    @typechecked
+    async def set_user_invite_count(ctx)->None:
+        name, invite_count = await get_args(ctx, 2)
+        if not name:
+            await ctx.send("Please provide a name for the user.", ephemeral=True)
+            return
+        if not invite_count:
+            await ctx.send("Please provide an invite count for the user.", ephemeral=True)
+            return
+        await ctx.send(f"Setting user {name} invite count to {invite_count}", ephemeral=True)
+        my_user:str = await api_set_user_invite_count(rest_key, name, new_name)
+        await ctx.send(f"User {my_user} updated", ephemeral=True)
+
+    @has_role('admin')
+    @bot.command(name='set_user_unclaimed_codes')
+    @logerror(logger)
+    @trace(logger)
+    @typechecked
+    async def set_user_unclaimed_codes(ctx)->None:
+        name, unclaimed_codes = await get_args(ctx, 2)
+        if not name:
+            await ctx.send("Please provide a name for the user.", ephemeral=True)
+            return
+        if not unclaimed_codes:
+            await ctx.send("Please provide an unclaimed codes for the user.", ephemeral=True)
+            return
+        await ctx.send(f"Setting user {name} unclaimed codes to {unclaimed_codes}", ephemeral=True)
+        my_user:str = await api_set_user_unclaimed_codes(rest_key, name, new_name)
+        await ctx.send(f"User {my_user} updated", ephemeral=True)
+
+    ##
+    # Badge CRUD
+    ##
+
+    @has_role('admin')
+    @bot.command(name='create_badge')
+    @logerror(logger)
+    @trace(logger)
+    @typechecked
+    async def create_badge(ctx)->None:
+        name:str = await get_arg(ctx)
+        if name:
+            await ctx.send(f"Creating badge {name}", ephemeral=True)
+            created_badge:str = await api_create_badge(rest_key, name)
+            #await ctx.send(f"Badge '{created_badge['name']}' created with ID {created_badge['id']}!")
+            await ctx.send(f"Badge {created_badge} created")
+        else:
+            await ctx.send("Please provide a name for the badge.", ephemeral=True)
+
+    @has_role('admin')
+    @bot.command(name='delete_badge')
+    @logerror(logger)
+    @trace(logger)
+    @typechecked
+    async def delete_badge(ctx)->None:
+        name:str = await get_arg(ctx)
+        if name:
+            await ctx.send(f"Deleting badge {name}", ephemeral=True)
+            deleted_badge:str = await api_delete_badge(rest_key, name)
+            #await ctx.send(f"Badge '{deleted_badge['name']}' deleted with ID {deleted_badge['id']}!")
+            await ctx.send(f"Badge {deleted_badge} deleted")
+        else:
+            await ctx.send("Please provide a name for the badge.", ephemeral=True)
+
+    @has_role('admin')
+    @bot.command(name='get_badge')
+    @logerror(logger)
+    @trace(logger)
+    @typechecked
+    async def get_badge(ctx)->None:
+        name:str = await get_arg(ctx)
+        if name:
+            await ctx.send(f"Getting badge {name}", ephemeral=True)
+            my_badge:JSON = await api_get_badge(rest_key, name)
+            await ctx.send(f"Badge '{my_badge['name']}' with ID {my_badge['id']}!", ephemeral=True)
+        else:
+            await ctx.send("Please provide a name for the badge.", ephemeral=True)
+
+    @bot.command(name='get_badges')
+    @logerror(logger)
+    @trace(logger)
+    @typechecked
+    async def get_badges(ctx)->None:
+
+        # TODO get list of badges of rest api
+        # TODO add one button per badge
+
+        await ctx.send('Getting badges list', ephemeral=True)
+        badges_list:JSON = await api_get_badges(rest_key)
+
+        #global badges_list
+        for badge in badges_list:
+            await logger.ainfo('badge: %s', badge)
+            await ctx.send(f'badge: {badge}', ephemeral=True)
+        #assert(badges_list)
+
+    @has_role('admin')
+    @bot.command(name='rename_badge')
+    @logerror(logger)
+    @trace(logger)
+    @typechecked
+    async def rename_badge(ctx)->None:
+        name, new_name = await get_args(ctx, 2)
+        if not name:
+            await ctx.send("Please provide a name for the badge.", ephemeral=True)
+            return
+        if not new_name:
+            await ctx.send("Please provide a new name for the badge.", ephemeral=True)
+            return
+        await ctx.send(f"Renaming badge {name} to {new_name}", ephemeral=True)
+        my_badge:str = await api_rename_badge(rest_key, name, new_name)
+        await ctx.send(f"Badge {my_badge} updated", ephemeral=True)
+
+
+
+
+
+
+
+
+
+
+
+
     return await bot.start(token)
-
-
 ##
 # Simple
 ##
@@ -368,3 +533,9 @@ async def main()->None:
     GUILD:str = getenv('DISCORD_GUILD')
     RESTK:str = getenv('SUPABASE_KEY')
     return await bot(TOKEN, GUILD, RESTK)
+    
+
+
+
+
+

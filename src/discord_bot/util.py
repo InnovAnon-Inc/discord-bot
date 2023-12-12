@@ -38,8 +38,12 @@ logger = get_logger()
 @typechecked
 async def is_admin(ctx)->bool:
     # TODO type hints
+    await logger.adebug('is_admin() 1')
     admin_role = get(ctx.guild.roles, name='admin')
-    return admin_role in ctx.author.roles
+    await logger.adebug('is_admin() 2')
+    result:bool = admin_role in ctx.author.roles
+    await logger.adebug('is_admin() 3')
+    return result
 
 @logerror(logger)
 @trace(logger)

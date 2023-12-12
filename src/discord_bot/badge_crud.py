@@ -46,40 +46,35 @@ logger = get_logger()
 #@logerror(logger)
 @trace(logger)
 @typechecked
-async def api_get_games(rest_key:str) -> JSON:
-    return await api_gets(rest_key, 'game')
-
-@logerror(logger)
-@trace(logger)
-@typechecked
-async def api_get_game(rest_key:str, name:str) -> JSON:
-    await logger.adebug('api_get_game() 1')
-    result:JSON = await api_get(rest_key, 'game', name)
-    await logger.adebug('api_get_game() 2')
-    assert len(result) == 1, f'api_get_user() result len should be 1, but it is {len(result)} {result}'
-    await logger.adebug('api_get_game() 3')
-    return result[0]
+async def api_get_badges(rest_key:str) -> JSON:
+    return await api_gets(rest_key, 'badge')
 
 #@logerror(logger)
 @trace(logger)
 @typechecked
-async def api_create_game(rest_key:str, name:str) -> str:
+async def api_get_badge(rest_key:str, name:str) -> JSON:
+    return await api_get(rest_key, 'badge', name)
+
+#@logerror(logger)
+@trace(logger)
+@typechecked
+async def api_create_badge(rest_key:str, name:str) -> str:
     data:DATA = {
         'name': name,
     }
-    return await api_create(rest_key, 'game', data)
+    return await api_create(rest_key, 'badge', data)
 
 #@logerror(logger)
 @trace(logger)
 @typechecked
-async def api_delete_game(rest_key:str, name:str) -> str:
-    return await api_delete(rest_key, 'game', name)
+async def api_delete_badge(rest_key:str, name:str) -> str:
+    return await api_delete(rest_key, 'badge', name)
 
 #@logerror(logger)
 @trace(logger)
 @typechecked
-async def api_rename_game(rest_key:str, name:str, new_name:str) -> str:
+async def api_rename_badge(rest_key:str, name:str, new_name:str) -> str:
     data:DATA = {
         'name': new_name,
     }
-    return await api_update(rest_key, 'game', name, data)
+    return await api_update(rest_key, 'badge', name, data)

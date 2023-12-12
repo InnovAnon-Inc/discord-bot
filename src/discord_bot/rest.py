@@ -78,12 +78,20 @@ def rest_params(func:CallableRest)->CallableApi:
 @logargswl(logger,0) # url
 @typechecked
 async def rest_get(url:str, session:ClientSession, headers:HEADERS, *args:P.args, **kwargs:P.kwargs) -> JSON:
-    assert not args
-    assert not kwargs
+    await logger.adebug('rest_get() 1')
+    assert not args,   f'rest_get() args should be unused, but it is {args}'
+    await logger.adebug('rest_get() 2')
+    assert not kwargs, f'rest_get() kwargs should be unused, but it is {kwargs}'
+    await logger.adebug('rest_get() 3')
     async with session.get(url, headers=headers) as response:
+        await logger.adebug('rest_get() 4')
         if response.status != 200:
+            await logger.adebug('rest_get() 5')
             raise RestException(f"Failed to get. HTTP status code: {response.status}")
-        return await response.json()
+        await logger.adebug('rest_get() 6')
+        result:JSON = await response.json()
+        await logger.adebug('rest_get() 7')
+        return result
 
 @logerror(logger)
 @trace(logger)
@@ -94,8 +102,8 @@ async def rest_get(url:str, session:ClientSession, headers:HEADERS, *args:P.args
 @logargswl(logger,0) # url
 @typechecked
 async def rest_post(url:str, session:ClientSession, headers:HEADERS, data:DATA, *args:P.args, **kwargs:P.kwargs) -> str:
-    assert not args
-    assert not kwargs
+    assert not args,   f'rest_post() args should be unused, but it is {args}'
+    assert not kwargs, f'rest_post() kwargs should be unused, but it is {kwargs}'
     async with session.post(url, headers=headers, json=data) as response:
         if response.status != 201:
             raise RestException(f"Failed to post. HTTP status code: {response.status}")
@@ -110,8 +118,8 @@ async def rest_post(url:str, session:ClientSession, headers:HEADERS, data:DATA, 
 @logargswl(logger,0) # url
 @typechecked
 async def rest_delete(url:str, session:ClientSession, headers:HEADERS, *args:P.args, **kwargs:P.kwargs) -> str:
-    assert not args
-    assert not kwargs
+    assert not args,   f'rest_delete() args should be unused, but it is {args}'
+    assert not kwargs, f'rest_delete() kwargs should be unused, but is is {kwargs}'
     async with session.delete(url, headers=headers) as response:
         if response.status != 204:
             raise RestException(f"Failed to delete. HTTP status code: {response.status}")
@@ -126,8 +134,8 @@ async def rest_delete(url:str, session:ClientSession, headers:HEADERS, *args:P.a
 @logargswl(logger,0) # url
 @typechecked
 async def rest_patch(url:str, session:ClientSession, headers:HEADERS, data:DATA, *args:P.args, **kwargs:P.kwargs) -> str:
-    assert not args
-    assert not kwargs
+    assert not args,   f'rest_patch() args should be unused, but it is {args}'
+    assert not kwargs, f'rest_patch() kwargs should be unused, but it is {kwargs}'
     async with session.patch(url, headers=headers, json=data) as response:
         if response.status != 204:
             raise RestException(f"Failed to patch. HTTP status code: {response.status}")

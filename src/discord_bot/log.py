@@ -77,36 +77,36 @@ def wlstr(ndxs:Tuple[int,...], kws:List[str], *args:P.args, **kwargs:P.kwargs)->
 
 @typechecked
 def largstr(argcb:WlArgs, fargs:Tuple[int,...], *args:P.args, **_:P.kwargs)->str:
-    assert not _
+    assert not _, f'largstr() _ should be unused, but it is {_}'
     return ','.join(  argcb(  fargs,  *args, **_))
 
 @typechecked
 def lkwargstr(kwargcb:WlKwArgs, fkwargs:List[str], *_:P.args, **kwargs:P.kwargs)->str:
-    assert not _
+    assert not _, f'lkwargstr() _ should be unused'
     return ','.join(kwargcb(fkwargs, *_, **kwargs))
 
 @typechecked
 def whitelist_args(only:Tuple[int,...], *args:P.args, **_:P.kwargs)->List[str]:
-    assert not _
+    assert not _, f'whitelist_args() _ should be unused, but it is {_}'
     if only:
         return [f"{arg}"         for i,   arg   in enumerate(args) if i       in only]
     return list_args(*args, **_)
 
 @typechecked
 def whitelist_kwargs(only:List[str], *_:P.args, **kwargs:P.kwargs)->List[str]:
-    assert not _
+    assert not _, f'whitelist_kwargs() _ should be unused, but it is {_}'
     if only:
         return [f"{key}={value}" for key, value in kwargs.items()  if key     in only]
     return list_kwargs(*_, **kwargs)
 
 @typechecked
 def list_args(*args:P.args, **_:P.kwargs)->List[str]:
-    assert not _
+    assert not _, f'list_args() _ should be unused, but it is {_}'
     return     [f"{arg}"         for      arg   in           args ]
 
 @typechecked
 def list_kwargs(*_:P.args, **kwargs:P.kwargs)->List[str]:
-    assert not _
+    assert not _, f'list_kwargs() _ should be unused, but it is {_}'
     return     [f"{key}={value}" for key, value in kwargs.items()]
 
 __author__    :str = "AI Assistant"

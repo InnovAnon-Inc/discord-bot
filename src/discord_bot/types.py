@@ -31,7 +31,7 @@ CallableSettings = Callable[[SettingArg,SettingKwArg,P.args,P.kwargs],T]
 #CallableNone  = Callable[P,None]
 #WrapperFlask  = Callable[[CallableFlask, P.args, P.kwargs], CallableNone]
 
-JSON    = List[Dict[str,Any]]
+JSON    = Union[List[Dict[str,Any]],Dict[str,Any]]#,str]
 HEADERS = Dict[str,str]
 DATA    = Dict[str,str]
 PARAMS  = Dict[str,str]

@@ -50,11 +50,16 @@ logger = get_logger()
 async def api_get_users(rest_key:str) -> JSON:
     return await api_gets(rest_key, 'user')
 
-#@logerror(logger)
+@logerror(logger)
 @trace(logger)
 @typechecked
 async def api_get_user(rest_key:str, name:str) -> JSON:
-    return await api_get(rest_key, 'user', name)
+    await logger.adebug('api_get_user() 1')
+    result:JSON = await api_get(rest_key, 'user', name)
+    await logger.adebug('api_get_user() 2')
+    assert len(result) == 1, f'api_get_user() result len should be 1, but it is {len(result)} {result}'
+    await logger.adebug('api_get_user() 3')
+    return result[0]
 
 #@logerror(logger)
 @trace(logger)
@@ -81,5 +86,38 @@ async def api_rename_user(rest_key:str, name:str, new_name:str) -> str:
         'name': new_name,
     }
     return await api_update(rest_key, 'user', name, data)
-# TODO get/set invite count
-# TODO get/set unclaimed codes
+
+#@logerror(logger)
+@trace(logger)
+@typechecked
+async def api_get_user_invite_count(rest_key:str, name:str) -> JSON:
+    params:PARAMS = {
+        'select': 'invite_count',
+    }
+    return await api_get(rest_key, 'user', name, params)
+#@logerror(logger)
+@trace(logger)
+@typechecked
+async def api_get_user_unclaimed_codes(rest_key:str, name:str) -> JSON:
+    params:PARAMS = {
+        'select': 'unclaimed_codes',
+    }
+    return await api_get(rest_key, 'user', name, params)
+
+#@logerror(logger)
+@trace(logger)
+@typechecked
+async def api_set_user_invite_count(rest_key:str, name:str, invite_count:int) -> str:
+    data:DATA = {
+        'invite_count': invite_count,
+    }
+    return await api_update(rest_key, 'user', name, data)
+
+#@logerror(logger)
+@trace(logger)
+@typechecked
+async def api_set_user_unclaimed_codes(rest_key:str, name:str, unclaimed_codes:int) -> str:
+    data:DATA = {
+        'unclaimed_codes': unclaimed_codes,
+    }
+    return await api_update(rest_key, 'user', name, data)

@@ -41,45 +41,58 @@ from .types import PARAMS
 logger = get_logger()
 
 REST_API:str = 'https://byyokbedkfrhtftkqawp.supabase.co/rest/v1'
+ALL_FIELDS:PARAMS = {
+    'select': '*',
+}
 
 ##
 # Supabase REST API CRUD Helpers
 ##
 
-#@logerror(logger)
+@logerror(logger)
 @trace(logger)
 @logargswl(logger,1,2) # table, name
 @typechecked
-async def api_gets(rest_key:str, table:str) -> JSON:
+async def api_gets(rest_key:str, table:str, params:PARAMS=ALL_FIELDS) -> JSON:
     url:str = '/'.join([REST_API, table])
-    params:PARAMS = {
-        'select': '*',
-    }
+    #params:PARAMS = {
+    #    'select': '*',
+    #}
     headers:HEADERS = {
         'apikey': rest_key,
         'Authorization': f'Bearer {rest_key}',
-
     }
     return await rest_get(url, params, headers)
 
-#@logerror(logger)
+@logerror(logger)
 @trace(logger)
 @logargswl(logger,1,2) # table, name
 @typechecked
-async def api_get(rest_key:str, table:str, name:str) -> JSON:
+async def api_get(rest_key:str, table:str, name:str, params:PARAMS=ALL_FIELDS) -> JSON:
+    await logger.adebug('api_get() 1')
     url:str = '/'.join([REST_API, table])
-    params:PARAMS = {
-        'name': f'eq.{name}',
-        'select': '*',
-    }
+    await logger.adebug('api_get() 2')
+    #params:PARAMS = {
+    #    'name': f'eq.{name}',
+    #    'select': '*',
+    #}
+    await logger.adebug('api_get() 3')
+    assert not ('name' in params), f'params should not contain a `name` key, but params is {params}'
+    await logger.adebug('api_get() 4')
+    params = dict(params)
+    await logger.adebug('api_get() 5')
+    params['name'] = f'eq.{name}'
+    await logger.adebug('api_get() 6')
     headers:HEADERS = {
         'apikey': rest_key,
         'Authorization': f'Bearer {rest_key}',
-
     }
-    return await rest_get(url, params, headers)
+    await logger.adebug('api_get() 7')
+    result:JSON = await rest_get(url, params, headers)
+    await logger.adebug('api_get() 8')
+    return result
 
-#@logerror(logger)
+@logerror(logger)
 @trace(logger)
 @logargswl(logger,1,2) # table, data
 @typechecked
@@ -94,7 +107,7 @@ async def api_create(rest_key:str, table:str, data:DATA) -> str:
     }
     return await rest_post(url, params, headers, data)
 
-#@logerror(logger)
+@logerror(logger)
 @trace(logger)
 @logargswl(logger,1,2) # table, name
 @typechecked
@@ -109,7 +122,7 @@ async def api_delete(rest_key:str, table:str, name:str) -> str:
     }
     return await rest_delete(url, params, headers)
 
-#@logerror(logger)
+@logerror(logger)
 @trace(logger)
 @logargswl(logger,1,2) # table, data
 @typechecked
