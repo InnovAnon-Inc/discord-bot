@@ -11,7 +11,6 @@ from discord import Intents
 from discord import Message
 from discord.ext.commands import Bot
 from discord.ext.commands import has_role
-from discord.utils import setup_logging
 from discord.utils import get
 from discord.utils import find
 from discord.ui import Button
@@ -28,13 +27,16 @@ from .types import P
 from .log import trace
 from .log import logerror
 
-from .rest import api_get
-from .rest import api_post
-from .rest import api_delete
 from .types import JSON
 from .types import HEADERS
 from .types import DATA
 from .types import PARAMS
+
+from .api import api_get
+from .api import api_gets
+from .api import api_create
+from .api import api_delete
+from .api import api_update
 
 logger = get_logger()
 
@@ -42,66 +44,42 @@ logger = get_logger()
 # User CRUD
 ##
 
-@logerror(logger)
+#@logerror(logger)
 @trace(logger)
 @typechecked
 async def api_get_users(rest_key:str) -> JSON:
-    url:str = 'https://byyokbedkfrhtftkqawp.supabase.co/rest/v1/user?select=*'
-    params:PARAMS = {
-        'select': '*',
-    }
-    headers:HEADERS = {
-        'apikey': rest_key,
-        'Authorization': f'Bearer {rest_key}',
+    return await api_gets(rest_key, 'user')
 
-    }
-    return await api_get(url, params, headers)
-
-@logerror(logger)
+#@logerror(logger)
 @trace(logger)
 @typechecked
 async def api_get_user(rest_key:str, name:str) -> JSON:
-    url:str = f'https://byyokbedkfrhtftkqawp.supabase.co/rest/v1/user'
-    params:PARAMS = {
-        'name': f'eq.{name}',
-        'select': '*',
-    }
-    headers:HEADERS = {
-        'apikey': rest_key,
-        'Authorization': f'Bearer {rest_key}',
+    return await api_get(rest_key, 'user', name)
 
-    }
-    return await api_get(url, params, headers)
-
-@logerror(logger)
+#@logerror(logger)
 @trace(logger)
 @typechecked
 async def api_create_user(rest_key:str, name:str) -> str:
-    url:str = 'https://byyokbedkfrhtftkqawp.supabase.co/rest/v1/user'
-    params:PARAMS = {}
-    headers:HEADERS = {
-        'apikey': rest_key,
-        'Authorization': f'Bearer {rest_key}',
-        'Content-Type': 'application/json',
-        'Prefer': 'return=minimal',
-    }
     data:DATA = {
         'name': name,
         #'unclaimed_codes' : 10,
         #`number_invites': 0,
     }
-    return await api_post(url, params, headers, data)
+    return await api_create(rest_key, 'user', data)
 
-@logerror(logger)
+#@logerror(logger)
 @trace(logger)
 @typechecked
 async def api_delete_user(rest_key:str, name:str) -> str:
-    url:str = f'https://byyokbedkfrhtftkqawp.supabase.co/rest/v1/user'
-    params:PARAMS = {
-        'name': f'eq.{name}',
+    return await api_delete(rest_key, 'user', name)
+
+#@logerror(logger)
+@trace(logger)
+@typechecked
+async def api_rename_user(rest_key:str, name:str, new_name:str) -> str:
+    data:DATA = {
+        'name': new_name,
     }
-    headers:HEADERS = {
-        'apikey': rest_key,
-        'Authorization': f'Bearer {rest_key}',
-    }
-    return await api_delete(url, params, headers)
+    return await api_update(rest_key, 'user', name, data)
+# TODO get/set invite count
+# TODO get/set unclaimed codes

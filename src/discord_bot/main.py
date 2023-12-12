@@ -30,6 +30,7 @@ from .log import logerror
 from .crud import *
 from .util import is_admin
 from .util import get_arg
+from .util import get_args
 from .types import JSON
 from .types import HEADERS
 from .types import DATA
@@ -261,6 +262,23 @@ async def bot(token:str, guild:str, rest_key:str)->None:
         #print(message.author.id)
         #response = f'FYI({message.author.id}): {response}'
         #await ctx.send(response, ephemeral=True)
+
+    @logerror(logger)
+    @trace(logger)
+    @has_role('admin')
+    @bot.command(name='rename_game')
+    @typechecked
+    async def rename_game(ctx)->None:
+        name, new_name = await get_args(ctx, 2)
+        if not name:
+            await ctx.send("Please provide a name for the game.", ephemeral=True)
+            return
+        if not new_name:
+            await ctx.send("Please provide a new name for the game.", ephemeral=True)
+            return
+        await ctx.send(f"Renaming game {name} to {new_name}", ephemeral=True)
+        my_game:str = await api_rename_game(rest_key, name, new_name)
+        await ctx.send(f"Game {my_game} updated", ephemeral=True)
 
 
     ##
