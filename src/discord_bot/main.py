@@ -3,14 +3,16 @@ from typing import List
 from random import choice
 from typing import Dict
 from typing import Any
+from typing import Union
 from aiohttp import ClientSession
-from urllib.parse import quote
+from urllib.parse import urlencode
 
 from discord import Intents
 from discord import Message
 from discord.ext.commands import Bot
 from discord.ext.commands import has_role
 from discord.utils import setup_logging
+from discord.utils import get
 from discord.utils import find
 from discord.ui import Button
 from discord import ButtonStyle
@@ -23,158 +25,18 @@ from discord.ext.commands.errors import CheckFailure
 
 from .hello import hellomain
 from .types import P
+from .log import trace
+from .log import logerror
+from .crud import *
+from .util import is_admin
+from .util import get_arg
+from .types import JSON
+from .types import HEADERS
+from .types import DATA
+from .types import PARAMS
 
 logger = get_logger()
 setup_logging()
-
-##
-# Game CRUD
-##
-
-@typechecked
-async def api_games(rest_key:str) -> List[Dict[str, Any]]:
-    url = 'https://byyokbedkfrhtftkqawp.supabase.co/rest/v1/game?select=*'
-    headers = {
-        'apikey': rest_key,
-        'Authorization': f'Bearer {rest_key}',
-
-    }
-    async with ClientSession() as session:
-        async with session.get(url, headers=headers) as response:
-            if response.status == 200:
-                data = await response.json()
-                return data
-            else:
-                raise Exception(f"Failed to get games. HTTP status code: {response.status}")
-
-@typechecked
-async def api_game(rest_key:str, name:str) -> List[Dict[str, Any]]:
-    encoded_name = quote(name)
-    url = f'https://byyokbedkfrhtftkqawp.supabase.co/rest/v1/game?name=eq.{encoded_name}&select=*'
-    headers = {
-        'apikey': rest_key,
-        'Authorization': f'Bearer {rest_key}',
-
-    }
-    async with ClientSession() as session:
-        async with session.get(url, headers=headers) as response:
-            if response.status == 200:
-                data = await response.json()
-                return data
-            else:
-                raise Exception(f"Failed to get game. HTTP status code: {response.status}")
-
-@typechecked
-async def api_create_game(rest_key:str, name:str) -> List[Dict[str, Any]]:
-    url = 'https://byyokbedkfrhtftkqawp.supabase.co/rest/v1/game'
-    headers = {
-        'apikey': rest_key,
-        'Authorization': f'Bearer {rest_key}',
-        'Content-Type': 'application/json',
-        'Prefer': 'return=minimal',
-    }
-    data = {
-        'name': name,
-    }
-    async with ClientSession() as session:
-        async with session.post(url, headers=headers, json=data) as response:
-            if response.status == 201:
-                created_game = await response.json()
-                return created_game
-            else:
-                raise Exception(f"Failed to create game. HTTP status code: {response.status}")
-
-
-@typechecked
-async def api_delete_game(rest_key:str, name:str) -> List[Dict[str, Any]]:
-    encoded_name = quote(name)
-    url = f'https://byyokbedkfrhtftkqawp.supabase.co/rest/v1/game?name=eq.{encoded_name}'
-    headers = {
-        'apikey': rest_key,
-        'Authorization': f'Bearer {rest_key}',
-    }
-    async with ClientSession() as session:
-        async with session.delete(url, headers=headers) as response:
-            if response.status == 204:
-                deleted_game = await response.json()
-                return deleted_game
-            else:
-                raise Exception(f"Failed to delete game. HTTP status code: {response.status}")
-
-##
-# User CRUD
-##
-
-@typechecked
-async def api_users(rest_key:str) -> List[Dict[str, Any]]:
-    url = 'https://byyokbedkfrhtftkqawp.supabase.co/rest/v1/user?select=*'
-    headers = {
-        'apikey': rest_key,
-        'Authorization': f'Bearer {rest_key}',
-
-    }
-    async with ClientSession() as session:
-        async with session.get(url, headers=headers) as response:
-            if response.status == 200:
-                data = await response.json()
-                return data
-            else:
-                raise Exception(f"Failed to get users. HTTP status code: {response.status}")
-
-@typechecked
-async def api_user(rest_key:str, name:str) -> List[Dict[str, Any]]:
-    encoded_name = quote(name)
-    url = f'https://byyokbedkfrhtftkqawp.supabase.co/rest/v1/user?name=eq.{encoded_name}&select=*'
-    headers = {
-        'apikey': rest_key,
-        'Authorization': f'Bearer {rest_key}',
-
-    }
-    async with ClientSession() as session:
-        async with session.get(url, headers=headers) as response:
-            if response.status == 200:
-                data = await response.json()
-                return data
-            else:
-                raise Exception(f"Failed to get user. HTTP status code: {response.status}")
-
-@typechecked
-async def api_create_user(rest_key:str, name:str) -> List[Dict[str, Any]]:
-    url = 'https://byyokbedkfrhtftkqawp.supabase.co/rest/v1/user'
-    headers = {
-        'apikey': rest_key,
-        'Authorization': f'Bearer {rest_key}',
-        'Content-Type': 'application/json',
-        'Prefer': 'return=minimal',
-    }
-    data = {
-        'name': name,
-        #'unclaimed_codes' : 10,
-        #`number_invites': 0,
-    }
-    async with ClientSession() as session:
-        async with session.post(url, headers=headers, json=data) as response:
-            if response.status == 201:
-                created_game = await response.json()
-                return created_game
-            else:
-                raise Exception(f"Failed to create game. HTTP status code: {response.status}")
-
-@typechecked
-async def api_delete_user(rest_key:str, name:str) -> List[Dict[str, Any]]:
-    encoded_name = quote(name)
-    url = f'https://byyokbedkfrhtftkqawp.supabase.co/rest/v1/user?name=eq.{encoded_name}'
-    headers = {
-        'apikey': rest_key,
-        'Authorization': f'Bearer {rest_key}',
-    }
-    async with ClientSession() as session:
-        async with session.delete(url, headers=headers) as response:
-            if response.status == 204:
-                deleted_user = await response.json()
-                return deleted_user
-            else:
-                raise Exception(f"Failed to delete user. HTTP status code: {response.status}")
 
 ##
 # Command View
@@ -190,6 +52,8 @@ class Buttons(View):
 # 0xPepesPlay Bot
 ##
 
+@logerror(logger)
+@trace(logger)
 @typechecked
 async def bot(token:str, guild:str, rest_key:str)->None:
     """
@@ -202,9 +66,11 @@ async def bot(token:str, guild:str, rest_key:str)->None:
     # allow to get commands from GC
     intents.message_content = True #v2
     bot    :Bot             = Bot(intents=intents, command_prefix='!')
-    #games_list:List[Dict[str,Any]] = []
+    #games_list:JSON = []
 
     
+    @logerror(logger)
+    @trace(logger)
     @bot.event
     @typechecked
     async def on_ready()->None:
@@ -212,13 +78,15 @@ async def bot(token:str, guild:str, rest_key:str)->None:
         # TODO get list of games from rest api
         #global games_list
         #await logger.ainfo('on_ready() get the games list')
-        #games_list = await api_games(rest_key)
+        #games_list = await api_get_games(rest_key)
         #await logger.ainfo('on_ready() games list: %s', games_list)
     # TODO admin command to reload list of games
     #@tasks.loop(seconds=600.0)
     #async def update_games(self):
 
 
+    @logerror(logger)
+    @trace(logger)
     @bot.event
     @typechecked
     async def on_command_error(ctx, error:Exception)->None:
@@ -226,13 +94,25 @@ async def bot(token:str, guild:str, rest_key:str)->None:
         send a FYEO to the user and log the exception
         """
 
+        # default message should not leak sensitive data to hackers
+        message:Union[str,Exception] = 'Check the logs for a more detailed error description'
+
+        # inform user of insufficient privileges
         if isinstance(error, CheckFailure):
-            await ctx.send(error, ephemeral=True)
+            message = error
+
+        # admins can see the error anyway
+        elif await is_admin(ctx):
+            message = error
+
+        await ctx.send(message, ephemeral=True)
         await logger.aexception(error)
 
 
-    @bot.command(name='shutdown')
+    @logerror(logger)
+    @trace(logger)
     @has_role('admin')
+    @bot.command(name='shutdown')
     @typechecked
     async def shutdown(ctx)->None:
         """
@@ -298,49 +178,61 @@ async def bot(token:str, guild:str, rest_key:str)->None:
     # Game CRUD
     ##
 
+    @logerror(logger)
+    @trace(logger)
     @has_role('admin')
     @bot.command(name='create_game')
+    @typechecked
     async def create_game(ctx)->None:
-        name: str = ctx.message.content.split(maxsplit=1)[1] # Extract the name from the command message
+        name:str = await get_arg(ctx)
         if name:
             await ctx.send(f"Creating game {name}", ephemeral=True)
-            created_game = await api_create_game(rest_key, name)
-            await ctx.send(f"Game '{created_game['name']}' created with ID {created_game['id']}!")
+            created_game:str = await api_create_game(rest_key, name)
+            #await ctx.send(f"Game '{created_game['name']}' created with ID {created_game['id']}!")
+            await ctx.send(f"Game {created_game} created")
         else:
             await ctx.send("Please provide a name for the game.", ephemeral=True)
 
+    @logerror(logger)
+    @trace(logger)
     @has_role('admin')
     @bot.command(name='delete_game')
+    @typechecked
     async def delete_game(ctx)->None:
-        name: str = ctx.message.content.split(maxsplit=1)[1] # Extract the name from the command message
+        name:str = await get_arg(ctx)
         if name:
             await ctx.send(f"Deleting game {name}", ephemeral=True)
-            deleted_game = await api_delete_game(rest_key, name)
-            await ctx.send(f"Game '{deleted_game['name']}' deleted with ID {deleted_game['id']}!")
+            deleted_game:str = await api_delete_game(rest_key, name)
+            #await ctx.send(f"Game '{deleted_game['name']}' deleted with ID {deleted_game['id']}!")
+            await ctx.send(f"Game {deleted_game} deleted")
         else:
             await ctx.send("Please provide a name for the game.", ephemeral=True)
 
+    @logerror(logger)
+    @trace(logger)
     @has_role('admin')
-    @bot.command(name='game')
-    async def game(ctx)->None:
-        name: str = ctx.message.content.split(maxsplit=1)[1] # Extract the name from the command message
+    @bot.command(name='get_game')
+    @typechecked
+    async def get_game(ctx)->None:
+        name:str = await get_arg(ctx)
         if name:
             await ctx.send(f"Getting game {name}", ephemeral=True)
-            my_game = await api_game(rest_key, name)
-            # TODO
-            #await ctx.send(f"Game '{my_game['name']}' with ID {my_game['id']}!", ephemeral=True)
+            my_game:JSON = await api_get_game(rest_key, name)
+            await ctx.send(f"Game '{my_game['name']}' with ID {my_game['id']}!", ephemeral=True)
         else:
             await ctx.send("Please provide a name for the game.", ephemeral=True)
 
-    @bot.command(name='games')
+    @logerror(logger)
+    @trace(logger)
+    @bot.command(name='get_games')
     @typechecked
-    async def games(ctx)->None:
+    async def get_games(ctx)->None:
 
         # TODO get list of games of rest api
         # TODO add one button per game
 
         await ctx.send('Getting games list', ephemeral=True)
-        games_list:List[Dict[str,Any]] = await api_games(rest_key)
+        games_list:JSON = await api_get_games(rest_key)
 
         #global games_list
         for game in games_list:
@@ -370,54 +262,83 @@ async def bot(token:str, guild:str, rest_key:str)->None:
         #response = f'FYI({message.author.id}): {response}'
         #await ctx.send(response, ephemeral=True)
 
-    return await bot.start(token)
 
     ##
     # User CRUD
     ##
 
+    @logerror(logger)
+    @trace(logger)
     @has_role('admin')
-    @bot.command(name='users')
+    @bot.command(name='get_users')
     @typechecked
-    async def users(ctx)->None:
+    async def get_users(ctx)->None:
 
         # TODO get list of users of rest api
         # TODO add one button per user
 
         await ctx.send('Getting users list', ephemeral=True)
-        users_list:List[Dict[str,Any]] = await api_users(rest_key)
+        users_list:JSON = await api_get_users(rest_key)
 
         #global users_list
         for user in users_list:
             await logger.ainfo('user: %s', user)
             await ctx.send(f'user: {user}', ephemeral=True)
 
+    @logerror(logger)
+    @trace(logger)
     @has_role('admin')
-    @bot.command(name='user')
-    async def user(ctx)->None:
-        name: str = ctx.message.content.split(maxsplit=1)[1] # Extract the name from the command message
+    @bot.command(name='get_user')
+    @typechecked
+    async def get_user(ctx)->None:
+        name:str = await get_arg(ctx)
         if name:
             await ctx.send(f"Getting user {name}", ephemeral=True)
-            my_user = await api_user(rest_key, name)
-            # TODO
-            #await ctx.send(f"Game '{my_user['name']}' with ID {my_user['id']}!")
+            my_user:JSON = await api_get_user(rest_key, name)
+            # TODO unused codes, invite count
+            await ctx.send(f"User '{my_user['name']}' with ID {my_user['id']}!")
         else:
             await ctx.send("Please provide a name for the user.", ephemeral=True)
 
+    @logerror(logger)
+    @trace(logger)
     @has_role('admin')
     @bot.command(name='create_user')
+    @typechecked
     async def create_user(ctx)->None:
-        name: str = ctx.message.content.split(maxsplit=1)[1] # Extract the name from the command message
+        name:str = await get_arg(ctx)
         if name:
             await ctx.send(f"Creating user {name}", ephemeral=True)
-            created_user = await api_create_user(rest_key, name)
-            await ctx.send(f"Game '{created_user['name']}' created with ID {created_user['id']}!")
+            created_user:str = await api_create_user(rest_key, name)
+            #await ctx.send(f"Game '{created_user['name']}' created with ID {created_user['id']}!")
+            await ctx.send(f"User {created_user} created")
         else:
             await ctx.send("Please provide a name for the user.", ephemeral=True)
+
+    @logerror(logger)
+    @trace(logger)
+    @has_role('admin')
+    @bot.command(name='delete_user')
+    @typechecked
+    async def delete_user(ctx)->None:
+        name:str = await get_arg(ctx)
+        if name:
+            await ctx.send(f"Deleting user {name}", ephemeral=True)
+            deleted_user:str = await api_delete_user(rest_key, name)
+            #await ctx.send(f"Game '{deleted_user['name']}' deleted with ID {deleted_user['id']}!")
+            await ctx.send(f"User {deleted_user} deleted")
+        else:
+            await ctx.send("Please provide a name for the user.", ephemeral=True)
+
+    return await bot.start(token)
+
+
 ##
 # Simple
 ##
 
+@logerror(logger)
+@trace(logger)
 @hellomain(logger)
 @typechecked
 async def main()->None:

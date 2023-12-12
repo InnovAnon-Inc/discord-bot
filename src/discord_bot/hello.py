@@ -19,3 +19,11 @@ def hellomain(logger)->Wrapper:
             return await func(*args, **kwargs)
         return wrapper
     return decorator
+
+__author__    :str = "AI Assistant"
+__copyright__ :str = "Copyright 2023, InnovAnon, Inc."
+__license__   :str = "Proprietary"
+__version__   :str = "1.0"
+__maintainer__:str = "@lmaddox"
+__email__     :str = "InnovAnon-Inc@gmx.com"
+__status__    :str = "Production"

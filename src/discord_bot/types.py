@@ -30,3 +30,8 @@ CallableSettings = Callable[[SettingArg,SettingKwArg,P.args,P.kwargs],T]
 #CallableFlask = Callable[P, Flask]
 #CallableNone  = Callable[P,None]
 #WrapperFlask  = Callable[[CallableFlask, P.args, P.kwargs], CallableNone]
+
+JSON    = List[Dict[str,Any]]
+HEADERS = Dict[str,str]
+DATA    = Dict[str,str]
+PARAMS  = Dict[str,str]
