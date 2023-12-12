@@ -1,6 +1,9 @@
 from os import getenv
 from typing import List
 from random import choice
+from typing import Dict
+from typing import Any
+from aiohttp import ClientSession
 
 from discord import Intents
 from discord import Message
@@ -22,6 +25,58 @@ from .types import P
 
 logger = get_logger()
 setup_logging()
+    
+@typechecked
+async def api_games(rest_key:str) -> List[Dict[str, Any]]:
+    url = 'https://byyokbedkfrhtftkqawp.supabase.co/rest/v1/game?select=*'
+    headers = {
+        'apikey': rest_key,
+        'Authorization': f'Bearer {rest_key}',
+
+    }
+    async with ClientSession() as session:
+        async with session.get(url, headers=headers) as response:
+            if response.status == 200:
+                data = await response.json()
+                return data
+            else:
+                raise Exception(f"Failed to get games. HTTP status code: {response.status}")
+
+@typechecked
+async def api_create_game(rest_key:str, name:str) -> List[Dict[str, Any]]:
+    url = 'https://byyokbedkfrhtftkqawp.supabase.co/rest/v1/game'
+    headers = {
+        'apikey': rest_key,
+        'Authorization': f'Bearer {rest_key}',
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal',
+    }
+    data = {
+        'name': name,
+    }
+    async with ClientSession() as session:
+        async with session.post(url, headers=headers, json=data) as response:
+            if response.status == 201:
+                created_game = await response.json()
+                return created_game
+            else:
+                raise Exception(f"Failed to create game. HTTP status code: {response.status}")
+
+@typechecked
+async def api_delete_game(rest_key:str, name:str) -> List[Dict[str, Any]]:
+    # TODO urlencode
+    url = f'https://byyokbedkfrhtftkqawp.supabase.co/rest/v1/game?name=eq.{name}'
+    headers = {
+        'apikey': rest_key,
+        'Authorization': f'Bearer {rest_key}',
+    }
+    async with ClientSession() as session:
+        async with session.delete(url, headers=headers) as response:
+            if response.status == 201:
+                deleted_game = await response.json()
+                return deleted_game
+            else:
+                raise Exception(f"Failed to delete game. HTTP status code: {response.status}")
 
 @typechecked
 class Buttons(View):
@@ -41,6 +96,7 @@ async def bot(token:str, guild:str, rest_key:str)->None:
     # allow to get commands from GC
     intents.message_content = True #v2
     bot    :Bot             = Bot(intents=intents, command_prefix='!')
+    #games_list:List[Dict[str,Any]] = []
 
     
     @bot.event
@@ -121,6 +177,33 @@ async def bot(token:str, guild:str, rest_key:str)->None:
     # TODO allow user to get and (re)generate `secret`
     # TODO maybe provide a direct link to play the game
 
+
+
+
+
+    @has_role('admin')
+    @bot.command(name='create_game')
+    async def create_game(ctx)->None:
+        name: str = ctx.message.content.split(maxsplit=1)[1] # Extract the name from the command message
+        if name:
+            await ctx.send(f"Creating game {name}", ephemeral=True)
+            created_game = await api_create_game(rest_key, name)
+            await ctx.send(f"Game '{created_game['name']}' created with ID {created_game['id']}!")
+        else:
+            await ctx.send("Please provide a name for the game.", ephemeral=True)
+
+    @has_role('admin')
+    @bot.command(name='delete_game')
+    async def delete_game(ctx)->None:
+        name: str = ctx.message.content.split(maxsplit=1)[1] # Extract the name from the command message
+        if name:
+            await ctx.send(f"Deleting game {name}", ephemeral=True)
+            deleted_game = await api_delete_game(rest_key, name)
+            await ctx.send(f"Game '{deleted_game['name']}' deleted with ID {deleted_game['id']}!")
+        else:
+            await ctx.send("Please provide a name for the game.", ephemeral=True)
+
+
     @bot.command(name='games')
     @typechecked
     async def games(ctx)->None:
@@ -128,9 +211,19 @@ async def bot(token:str, guild:str, rest_key:str)->None:
         # TODO get list of games of rest api
         # TODO add one button per game
 
+        await ctx.send('Getting games list', ephemeral=True)
+        games_list:List[Dict[str,Any]] = await api_games(rest_key)
+
+        #global games_list
+        for game in games_list:
+            await logger.ainfo('game: %s', game)
+            await ctx.send(f'game: {game}', ephemeral=True)
+        #assert(games_list)
+
         view:View = Buttons()
         view.add_item(Button(label="URL Button",style=ButtonStyle.link,url="https://github.com/lykn"))
         await ctx.send("This message has buttons!",view=view)
+
         
         # TODO button callback function to get access code from rest api
         # TODO user id : #print(message.author.id)
@@ -151,27 +244,14 @@ async def bot(token:str, guild:str, rest_key:str)->None:
 
     return await bot.start(token)
 
-    @typechecked
-    async def get_games() -> List[Dict[str, Any]]:
-        url = 'https://byyokbedkfrhtftkqawp.supabase.co/rest/v1/game?select=*'
-        headers = {
-            'apikey': 'YOUR_API_KEY',
-            'Authorization': 'Bearer YOUR_AUTH_TOKEN'
-        }
-
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, headers=headers) as response:
-                if response.status == 200:
-                    data = await response.json()
-                    return data
-                else:
-                    raise Exception(f"Failed to get games. HTTP status code: {response.status}")
-
     @bot.event
     @typechecked
     async def on_ready() -> None:
         await logger.ainfo('%s has connected to Discord!', bot.user.name)
-        games = await get_games()
+        #global games_list
+        #await logger.ainfo('on_ready() get the games list')
+        #games_list = await api_games(rest_key)
+        #await logger.ainfo('on_ready() games list: %s', games_list)
 
 
 @hellomain(logger)

@@ -110,6 +110,7 @@ dependencies = [ # Optional
   "requests",
   "discord.py",
   "typeguard",
+  "aiohttp",
 ]
 
 [tool.setuptools_scm]
