@@ -56,6 +56,28 @@ async def api_get(rest_key: str, table: str, name: str, params: PARAMS = ALL_FIE
     result: JSON = await rest_get(url, params, headers)
     return result
 
+@logerror(logger)
+@trace(logger)
+@logargswl(logger, 1, 2)  # table, name
+@typechecked
+async def api_get_by_id(rest_key: str, table: str, name: str, params: PARAMS = ALL_FIELDS) -> JSON:
+    """ get the row with the specified `id` """
+
+    url: str = '/'.join([REST_API, table])
+    # params:PARAMS = {
+    #    'id': f'eq.{id}',
+    #    'select': '*',
+    # }
+    assert 'id' not in params, f'params should not contain a `id` key, but params is {params}'
+    params = dict(params)
+    params['id'] = f'eq.{name}'
+    headers: HEADERS = {
+        'apikey': rest_key,
+        'Authorization': f'Bearer {rest_key}',
+    }
+    result: JSON = await rest_get(url, params, headers)
+    return result
+
 
 @logerror(logger)
 @trace(logger)

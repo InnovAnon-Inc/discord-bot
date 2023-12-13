@@ -5,7 +5,7 @@ from typing import List
 from structlog import get_logger
 from typeguard import typechecked
 
-from .api import api_create, api_delete, api_get, api_gets, api_update
+from .api import api_create, api_delete, api_get, api_gets, api_update, api_get_by_id
 from .log import logerror, trace
 from .types import DATA, JSON, PARAMS
 from .util import get_names
@@ -34,6 +34,20 @@ async def api_get_user(rest_key: str, name: str) -> JSON:
     """ Get all columns of the user with `name` """
 
     result: JSON = await api_get(rest_key, 'user', name)
+    assert len(
+        result) == 1, f'api_get_user() result len should be 1, but it is {len(result)} {result}'
+    return result[0]
+
+@logerror(logger)
+@trace(logger)
+@typechecked
+async def api_get_user_by_id(rest_key: str, user_id:int) -> JSON:
+    """ Get all columns of the user with `name` """
+
+    params: PARAMS = {
+        'select': 'name',
+    }
+    result: JSON = await api_get_by_id(rest_key, 'user', str(user_id), params)
     assert len(
         result) == 1, f'api_get_user() result len should be 1, but it is {len(result)} {result}'
     return result[0]

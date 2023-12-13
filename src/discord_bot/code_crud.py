@@ -1,5 +1,8 @@
 """ Game Table CRUD """
 
+from typing import List
+from typing import Dict
+
 from structlog import get_logger
 from typeguard import typechecked
 
@@ -8,7 +11,10 @@ from .log import logerror, trace, logargswl
 from .types import DATA, HEADERS, JSON, PARAMS
 from .user_crud import api_get_user_id
 from .game_crud import api_get_game_id
+from .user_crud import api_get_user_by_id
+from .game_crud import api_get_game_by_id
 from .rest import rest_get, rest_delete, rest_patch
+from .util import get_user_ids, get_game_ids, get_remainings, get_secrets, get_names
 
 logger = get_logger()
 
@@ -30,12 +36,10 @@ async def api_get2(
     url: str = '/'.join([REST_API, table])
     params = dict(params)
 
-    assert 'user_id' not in params,
-    f'params should not contain a `user_id` key, but params is {params}'
+    assert 'user_id' not in params, f'params should not contain a `user_id` key, but params is {params}'
     params['user_id'] = f'eq.{user_id}'
 
-    assert 'game_id' not in params,
-    f'params should not contain a `game_id` key, but params is {params}'
+    assert 'game_id' not in params, f'params should not contain a `game_id` key, but params is {params}'
     params['game_id'] = f'eq.{game_id}'
 
     headers: HEADERS = {
@@ -102,10 +106,30 @@ async def api_get_codes(rest_key: str) -> JSON:
 
     params: PARAMS = {
         # 'select': 'name',
-        # TODO not secret
-        'select': '*',
+        'select': 'user_id,game_id,remaining',
     }
-    return await api_gets(rest_key, 'code', params)
+    result:JSON = await api_gets(rest_key, 'code', params)
+
+    user_ids  :List[int] = get_user_ids(result)
+    game_ids  :List[int] = get_game_ids(result)
+    remainings:List[int] = get_remainings(result)
+
+    #user_names:List[str] = list(map(api_get_user_by_id, user_ids))
+    #game_names:List[str] = list(map(api_get_game_by_id, game_ids))
+    user_dicts:List[Dict[str,str]] = [await api_get_user_by_id(rest_key, user_id) for user_id in user_ids]
+    game_dicts:List[Dict[str,str]] = [await api_get_game_by_id(rest_key, game_id) for game_id in game_ids]
+
+    user_names:List[str] = get_names(user_dicts)
+    game_names:List[str] = get_names(game_dicts)
+
+    rows:List[Dict[str,str]] = [ {
+        'user_name': user_name,
+        'game_name': game_name,
+        'remaining': str(remaining),
+    } for user_name, game_name, remaining in zip(user_names, game_names, remainings)]
+    return rows
+
+
 
 
 @logerror(logger)
@@ -126,7 +150,7 @@ async def api_get_code(rest_key: str, user_name: str, game_name: str) -> JSON:
 
 @trace(logger)
 @typechecked
-async def api_create_code(rest_key: str, user_name: str, game_name: str) -> str:
+async def api_create_code(rest_key: str, user_name: str, game_name: str, secret:str) -> str:
     """ Register a code """
 
     user_id: int = await api_get_user_id(rest_key, user_name)
@@ -134,8 +158,10 @@ async def api_create_code(rest_key: str, user_name: str, game_name: str) -> str:
     data: DATA = {
         'user_id': str(user_id),
         'game_id': str(game_id),
-        # remaining_uses: 10
+        # remaining: 10
+        # TODO
         # secret: random()
+        'secret': secret,
     }
     return await api_create(rest_key, 'code', data)
 
@@ -165,22 +191,22 @@ async def api_delete_code(rest_key: str, user_name: str, game_name: str) -> str:
 
 @trace(logger)
 @typechecked
-async def api_get_code_remaining_uses(rest_key: str, user_name: str, game_name: str) -> JSON:
-    """ Get the `remaining_uses` of the access code with `user_name` and `game_name` """
+async def api_get_code_remaining(rest_key: str, user_name: str, game_name: str) -> int:
+    """ Get the `remaining` of the access code with `user_name` and `game_name` """
 
     user_id: int = await api_get_user_id(rest_key, user_name)
     game_id: int = await api_get_game_id(rest_key, game_name)
     params: PARAMS = {
-        'select': 'remaining_uses',
+        'select': 'remaining',
     }
     result: JSON = await api_get2(rest_key, 'code', user_id, game_id, params)
     assert len(
         result) == 1, f'api_get_code() result len should be 1, but it is {len(result)} {result}'
-    return result[0]
+    return int(result[0]['remaining'])
 
 
 @typechecked
-async def api_get_code_secret(rest_key: str, user_name: str, game_name: str) -> JSON:
+async def api_get_code_secret(rest_key: str, user_name: str, game_name: str) -> str:
     """ Get the `secret` of the access code with `user_name` and `game_name` """
 
     user_id: int = await api_get_user_id(rest_key, user_name)
@@ -191,22 +217,22 @@ async def api_get_code_secret(rest_key: str, user_name: str, game_name: str) -> 
     result: JSON = await api_get2(rest_key, 'code', user_id, game_id, params)
     assert len(
         result) == 1, f'api_get_code() result len should be 1, but it is {len(result)} {result}'
-    return result[0]
+    return result[0]['secret']
 
 # @logerror(logger)
 
 
 @trace(logger)
 @typechecked
-async def api_set_code_remaining_uses(
+async def api_set_code_remaining(
         rest_key: str, user_name: str, game_name: str,
-        remaining_uses: int) -> str:
-    """ Set the `remaining_uses` of the access code with `user_name` and `game_name` """
+        remaining: int) -> str:
+    """ Set the `remaining` of the access code with `user_name` and `game_name` """
 
     user_id: int = await api_get_user_id(rest_key, user_name)
     game_id: int = await api_get_game_id(rest_key, game_name)
     data: DATA = {
-        'remaining_uses': str(remaining_uses),
+        'remaining': str(remaining),
     }
     return await api_update2(rest_key, 'code', user_id, game_id, data)
 

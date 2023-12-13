@@ -78,3 +78,68 @@ def get_names(json: List[Dict[str, str]]) -> List[str]:
     """ map get_name() over the list """
 
     return list(map(get_name, json))
+
+@typechecked
+def get_id(json: Dict[str, int]) -> int:
+    """ get the value associated with the `id` key """
+
+    return json['id']
+
+
+@typechecked
+def get_ids(json: List[Dict[str, int]]) -> List[int]:
+    """ map get_id() over the list """
+
+    return list(map(get_id, json))
+
+@typechecked
+def get_user_id(json: Dict[str, int]) -> int:
+    """ get the value associated with the `user_id` key """
+
+    return json['user_id']
+
+
+@typechecked
+def get_user_ids(json: List[Dict[str, int]]) -> List[int]:
+    """ map get_user_id() over the list """
+
+    return list(map(get_user_id, json))
+
+@typechecked
+def get_game_id(json: Dict[str, int]) -> int:
+    """ get the value associated with the `game_id` key """
+
+    return json['game_id']
+
+
+@typechecked
+def get_game_ids(json: List[Dict[str, int]]) -> List[int]:
+    """ map get_game_id() over the list """
+
+    return list(map(get_game_id, json))
+
+@typechecked
+def get_remaining(json: Dict[str, int]) -> int:
+    """ get the value associated with the `remaining` key """
+
+    return json['remaining']
+
+
+@typechecked
+def get_remainings(json: List[Dict[str, int]]) -> List[int]:
+    """ map get_remaining() over the list """
+
+    return list(map(get_remaining, json))
+
+@typechecked
+def get_secret(json: Dict[str, str]) -> str:
+    """ get the value associated with the `secret` key """
+
+    return json['secret']
+
+
+@typechecked
+def get_secrets(json: List[Dict[str, str]]) -> List[str]:
+    """ map get_secret() over the list """
+
+    return list(map(get_secret, json))
