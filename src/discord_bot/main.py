@@ -229,9 +229,10 @@ async def bot(token:str, guild:str, rest_key:str)->None:
         # TODO add one button per game
 
         await ctx.send('Getting games list', ephemeral=True)
-        games_list:JSON = await api_get_games(rest_key)
+        games_list:List[str] = await api_get_games(rest_key)
 
         #global games_list
+        # TODO just send one message
         for game in games_list:
             await logger.ainfo('game: %s', game)
             await ctx.send(f'game: {game}', ephemeral=True)
@@ -297,9 +298,10 @@ async def bot(token:str, guild:str, rest_key:str)->None:
         # TODO add one button per user
 
         await ctx.send('Getting users list', ephemeral=True)
-        users_list:JSON = await api_get_users(rest_key)
+        users_list:List[str] = await api_get_users(rest_key)
 
         #global users_list
+        # TODO just send one message
         for user in users_list:
             await logger.ainfo('user: %s', user)
             await ctx.send(f'user: {user}', ephemeral=True)
@@ -393,7 +395,7 @@ async def bot(token:str, guild:str, rest_key:str)->None:
             return
 
         await ctx.send(f"Getting user {name} invite count", ephemeral=True)
-        my_user:JSON = await api_get_user_invite_count(rest_key, name)
+        my_user:int = await api_get_user_invite_count(rest_key, name)
         # TODO unused codes, invite count
         await ctx.send(f"User invite count {my_user}")
 
@@ -411,7 +413,7 @@ async def bot(token:str, guild:str, rest_key:str)->None:
             return
 
         await ctx.send(f"Getting user {name} unclaimed codes", ephemeral=True)
-        my_user:JSON = await api_get_user_unclaimed_codes(rest_key, name)
+        my_user:int = await api_get_user_unclaimed_codes(rest_key, name)
         # TODO unused codes, invite count
         await ctx.send(f"User unclaimed codes {my_user}")
 
@@ -525,9 +527,10 @@ async def bot(token:str, guild:str, rest_key:str)->None:
         # TODO add one button per badge
 
         await ctx.send('Getting badges list', ephemeral=True)
-        badges_list:JSON = await api_get_badges(rest_key)
+        badges_list:List[str] = await api_get_badges(rest_key)
 
         #global badges_list
+        # TODO just send one message
         for badge in badges_list:
             await logger.ainfo('badge: %s', badge)
             await ctx.send(f'badge: {badge}', ephemeral=True)

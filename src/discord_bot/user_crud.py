@@ -37,6 +37,7 @@ from .api import api_gets
 from .api import api_create
 from .api import api_delete
 from .api import api_update
+from .util import get_names
 
 logger = get_logger()
 
@@ -47,11 +48,12 @@ logger = get_logger()
 #@logerror(logger)
 @trace(logger)
 @typechecked
-async def api_get_users(rest_key:str) -> JSON:
+async def api_get_users(rest_key:str) -> List[str]:
     params:PARAMS = {
         'select': 'name',
     }
-    return await api_gets(rest_key, 'user', params)
+    result:JSON = await api_gets(rest_key, 'user', params)
+    return get_names(result)
 
 @logerror(logger)
 @trace(logger)
@@ -93,7 +95,18 @@ async def api_rename_user(rest_key:str, name:str, new_name:str) -> str:
 #@logerror(logger)
 @trace(logger)
 @typechecked
-async def api_get_user_invite_count(rest_key:str, name:str) -> JSON:
+async def api_get_user_id(rest_key:str, name:str) -> int:
+    params:PARAMS = {
+        'select': 'id',
+    }
+    result:JSON = await api_get(rest_key, 'user', name, params)
+    assert len(result) == 1, f'api_get_user() result len should be 1, but it is {len(result)} {result}'
+    return int(result[0]['id'])
+
+#@logerror(logger)
+@trace(logger)
+@typechecked
+async def api_get_user_invite_count(rest_key:str, name:str) -> int:
     await logger.adebug('api_get_user_invite_count() 1')
     params:PARAMS = {
         'select': 'invite_count',
@@ -103,12 +116,12 @@ async def api_get_user_invite_count(rest_key:str, name:str) -> JSON:
     await logger.adebug('api_get_user_invite_count() 3')
     assert len(result) == 1, f'api_get_user() result len should be 1, but it is {len(result)} {result}'
     await logger.adebug('api_get_user_invite_count() 4')
-    return result[0]
+    return int(result[0]['invite_count'])
 
 #@logerror(logger)
 @trace(logger)
 @typechecked
-async def api_get_user_unclaimed_codes(rest_key:str, name:str) -> JSON:
+async def api_get_user_unclaimed_codes(rest_key:str, name:str) -> int:
     await logger.adebug('api_get_user_unclaimed_codes() 1')
     params:PARAMS = {
         'select': 'unclaimed_codes',
@@ -118,7 +131,7 @@ async def api_get_user_unclaimed_codes(rest_key:str, name:str) -> JSON:
     await logger.adebug('api_get_user_unclaimed_codes() 3')
     assert len(result) == 1, f'api_get_user() result len should be 1, but it is {len(result)} {result}'
     await logger.adebug('api_get_user_unclaimed_codes() 4')
-    return result[0]
+    return int(result[0]['unclaimed_codes'])
 
 #@logerror(logger)
 @trace(logger)

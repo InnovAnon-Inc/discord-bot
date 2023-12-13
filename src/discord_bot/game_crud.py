@@ -36,6 +36,7 @@ from .api import api_gets
 from .api import api_create
 from .api import api_delete
 from .api import api_update
+from .util import get_names
 
 logger = get_logger()
 
@@ -46,11 +47,12 @@ logger = get_logger()
 #@logerror(logger)
 @trace(logger)
 @typechecked
-async def api_get_games(rest_key:str) -> JSON:
+async def api_get_games(rest_key:str) -> List[str]:
     params:PARAMS = {
         'select': 'name',
     }
-    return await api_gets(rest_key, 'game', params)
+    result:JSON = await api_gets(rest_key, 'game', params)
+    return get_names(result)
 
 @logerror(logger)
 @trace(logger)
@@ -59,7 +61,7 @@ async def api_get_game(rest_key:str, name:str) -> JSON:
     await logger.adebug('api_get_game() 1')
     result:JSON = await api_get(rest_key, 'game', name)
     await logger.adebug('api_get_game() 2')
-    assert len(result) == 1, f'api_get_user() result len should be 1, but it is {len(result)} {result}'
+    assert len(result) == 1, f'api_get_game() result len should be 1, but it is {len(result)} {result}'
     await logger.adebug('api_get_game() 3')
     return result[0]
 
@@ -86,3 +88,14 @@ async def api_rename_game(rest_key:str, name:str, new_name:str) -> str:
         'name': new_name,
     }
     return await api_update(rest_key, 'game', name, data)
+
+#@logerror(logger)
+@trace(logger)
+@typechecked
+async def api_get_game_id(rest_key:str, name:str) -> int:
+    params:PARAMS = {
+        'select': 'id',
+    }
+    result:JSON = await api_get(rest_key, 'game', name, params)
+    assert len(result) == 1, f'api_get_game() result len should be 1, but it is {len(result)} {result}'
+    return int(result[0]['id'])

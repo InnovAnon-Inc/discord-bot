@@ -76,3 +76,11 @@ async def get_arg(ctx)->str:
 async def get_args(ctx, n:int)->List[str]:
     #args:List[str] = ctx.message.content.split(maxsplit=n)[1:] # Extract n args from the command message
     return await arg_helper(ctx, n)
+
+@typechecked
+def get_name(json:Dict[str,str])->str:
+    return json['name']
+
+@typechecked
+def get_names(json:List[Dict[str,str]])->List[str]:
+    return list(map(get_name, json))

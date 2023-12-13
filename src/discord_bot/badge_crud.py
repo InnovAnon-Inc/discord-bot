@@ -36,6 +36,7 @@ from .api import api_gets
 from .api import api_create
 from .api import api_delete
 from .api import api_update
+from .util import get_names
 
 logger = get_logger()
 
@@ -46,11 +47,12 @@ logger = get_logger()
 #@logerror(logger)
 @trace(logger)
 @typechecked
-async def api_get_badges(rest_key:str) -> JSON:
+async def api_get_badges(rest_key:str) -> List[str]:
     params:PARAMS = {
         'select': 'name',
     }
-    return await api_gets(rest_key, 'badge', params)
+    result:JSON = await api_gets(rest_key, 'badge', params)
+    return get_names(result)
 
 #@logerror(logger)
 @trace(logger)
