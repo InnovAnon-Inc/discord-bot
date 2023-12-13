@@ -14,7 +14,7 @@ from .crud import *
 from .log import logerror, trace
 from .types import JSON
 from .util import get_arg, get_args, is_admin
-from .cogs import *
+#from .cogs import *
 from .view import Buttons
 
 logger = get_logger()
@@ -532,5 +532,5 @@ async def botze(token: str, guild: str, rest_key: str) -> None:
     # UserBadgeLink CRUD
     ##
 
-    bot.add_cog(GameCog(bot, rest_key))
+    #bot.add_cog(GameCog(bot, rest_key))
     return await bot.start(token)
