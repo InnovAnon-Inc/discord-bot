@@ -242,12 +242,12 @@ async def api_set_code_remaining(
 @trace(logger)
 @typechecked
 async def api_set_code_secret(rest_key: str, user_name: str, game_name: str,
-                              secret: int) -> str:
+                              secret: str) -> str:
     """ Set the `secret` of the access code with `user_name` and `game_name` """
 
     user_id: int = await api_get_user_id(rest_key, user_name)
     game_id: int = await api_get_game_id(rest_key, game_name)
     data: DATA = {
-        'secret': str(secret),
+        'secret': secret,
     }
     return await api_update2(rest_key, 'code', user_id, game_id, data)

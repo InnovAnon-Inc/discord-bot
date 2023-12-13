@@ -203,6 +203,6 @@ class CodeCog(Cog):
             return
 
         await ctx.send(f"Setting code {name} {game} secret to {secret}", ephemeral=True)
-        my_code: str = await api_set_code_secret(self.rest_key, name, game, int(secret))
+        my_code: str = await api_set_code_secret(self.rest_key, name, game, secret)
         await ctx.send(f"Code {my_code} updated", ephemeral=True)
 
