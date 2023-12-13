@@ -30,11 +30,11 @@ def trace(logger) -> Wrapper:
 
 
 @typechecked
-def logerror(logger, *E: Union[Exception, None]) -> Wrapper:
+def logerror(logger, *E: type) -> Wrapper:
     """ Log the specified exceptions """
 
     if not E:
-        E = Exception
+        E = (Exception,)
 
     @typechecked
     def decorator(func: CallableVarArgs) -> CallableVarArgs:

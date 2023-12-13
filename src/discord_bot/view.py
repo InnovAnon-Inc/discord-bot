@@ -1,0 +1,20 @@
+""" The bot proper """
+
+#from discord import ButtonStyle, Intents  # , Interaction, Member, Message
+#from discord.ui import Button
+from discord.ui import View
+from structlog import get_logger
+from typeguard import typechecked
+
+from .types import P
+
+logger = get_logger()
+
+
+@typechecked
+class Buttons(View):
+    """ Buttons to display on command """
+
+    @typechecked
+    def __init__(self, *_:P.args, timeout:int=180):
+        super().__init__(timeout=timeout)

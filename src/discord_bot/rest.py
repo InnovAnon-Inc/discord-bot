@@ -13,7 +13,7 @@ from .types import DATA, HEADERS, JSON, PARAMS, P
 
 logger = get_logger()
 
-
+@typechecked
 class RestException(Exception):
     """ REST API Exception """
 

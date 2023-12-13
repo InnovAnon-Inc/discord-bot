@@ -14,22 +14,13 @@ from .crud import *
 from .log import logerror, trace
 from .types import JSON
 from .util import get_arg, get_args, is_admin
+from .cogs import *
+from .view import Buttons
 
 logger = get_logger()
 setup_logging()
 
-##
-# Command View
-##
 
-
-@typechecked
-class Buttons(View):
-    """ Buttons to display on command """
-
-    @typechecked
-    def __init__(self, *, timeout=180):
-        super().__init__(timeout=timeout)
 
 ##
 # 0xPepesPlay Bot
@@ -541,4 +532,5 @@ async def botze(token: str, guild: str, rest_key: str) -> None:
     # UserBadgeLink CRUD
     ##
 
+    bot.add_cog(GameCog(bot, rest_key))
     return await bot.start(token)
