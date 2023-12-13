@@ -141,4 +141,5 @@ async def botze(token: str, guild: str, rest_key: str) -> None:
     await bot.add_cog( UserCog(bot, rest_key))
     await bot.add_cog( CodeCog(bot, rest_key))
     await bot.add_cog(BadgeCog(bot, rest_key))
+    await bot.add_cog(UserBadgeLinkCog(bot, rest_key))
     return await bot.start(token)

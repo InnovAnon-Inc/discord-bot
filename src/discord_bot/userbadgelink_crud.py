@@ -108,7 +108,7 @@ async def api_get_userbadgelinks(rest_key: str) -> JSON:
     #    # 'select': 'name',
     #    'select': 'user_id,badge_id,remaining',
     #}
-    result:JSON = await api_gets(rest_key, 'userbadgelink', params)
+    result:JSON = await api_gets(rest_key, 'userbadgelink')#, params)
 
     user_ids  :List[int] = get_user_ids(result)
     badge_ids  :List[int] = get_badge_ids(result)

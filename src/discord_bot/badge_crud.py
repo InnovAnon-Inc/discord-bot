@@ -5,8 +5,8 @@ from typing import List
 from structlog import get_logger
 from typeguard import typechecked
 
-from .api import api_create, api_delete, api_get, api_gets, api_update
-from .log import trace
+from .api import api_create, api_delete, api_get, api_gets, api_update, api_get_by_id
+from .log import trace, logerror
 from .types import DATA, JSON, PARAMS
 from .util import get_names
 
@@ -71,3 +71,30 @@ async def api_rename_badge(rest_key: str, name: str, new_name: str) -> str:
         'name': new_name,
     }
     return await api_update(rest_key, 'badge', name, data)
+
+@trace(logger)
+@typechecked
+async def api_get_badge_id(rest_key: str, name: str) -> int:
+    """ Get the `id` of the badge with `name` """
+
+    params: PARAMS = {
+        'select': 'id',
+    }
+    result: JSON = await api_get(rest_key, 'badge', name, params)
+    assert len(
+        result) == 1, f'api_get_badge() result len should be 1, but it is {len(result)} {result}'
+    return int(result[0]['id'])
+
+@logerror(logger)
+@trace(logger)
+@typechecked
+async def api_get_badge_by_id(rest_key: str, badge_id:int) -> JSON:
+    """ Get all columns of the badge with `name` """
+
+    params: PARAMS = {
+        'select': 'name',
+    }
+    result: JSON = await api_get_by_id(rest_key, 'badge', str(badge_id), params)
+    assert len(
+        result) == 1, f'api_get_badge() result len should be 1, but it is {len(result)} {result}'
+    return result[0]

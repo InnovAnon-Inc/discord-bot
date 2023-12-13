@@ -46,7 +46,7 @@ class UserBadgeLinkCog(Cog):
         # TODO just send one message
         for userbadgelink in userbadgelinks_list:
             await logger.ainfo('userbadgelink: %s', userbadgelink)
-            user, badge, secret = userbadgelink
+            user, badge = userbadgelink
             await logger.ainfo('user: %s', user)
             await logger.ainfo('badge: %s', badge)
             await ctx.send(f'userbadgelink: {userbadgelink}', ephemeral=True)
@@ -67,7 +67,7 @@ class UserBadgeLinkCog(Cog):
         await ctx.send(f"Getting userbadgelink {name} {badge}", ephemeral=True)
         my_userbadgelink: JSON = await api_get_userbadgelink(self.rest_key, name, badge)
         # TODO unused userbadgelinks, invite count
-        await ctx.send(f"UserBadgeLink '{my_userbadgelink['secret']}' with ID {my_userbadgelink['user_id']} {my_userbadgelink['badge_id']}!")
+        await ctx.send(f"UserBadgeLink with ID {my_userbadgelink['user_id']} {my_userbadgelink['badge_id']}!")
 
     @has_role('admin')
     @command()
@@ -75,15 +75,15 @@ class UserBadgeLinkCog(Cog):
     @trace(logger)
     @typechecked
     async def create_userbadgelink(self, ctx) -> None:
-        """ <name>: Register a `userbadgelink` with the specified `user name`, `badge name` and `secret` """
+        """ <name>: Register a `userbadgelink` with the specified `user name` and `badge name` """
 
-        name, badge, secret = await get_args(ctx, 3)
+        name, badge = await get_args(ctx, 2)
         if not name or not badge:
             await ctx.send("Please provide a user name and badge name for the userbadgelink.", ephemeral=True)
             return
 
         await ctx.send(f"Creating userbadgelink {name} {badge}", ephemeral=True)
-        created_userbadgelink: str = await api_create_userbadgelink(self.rest_key, name, badge, secret)
+        created_userbadgelink: str = await api_create_userbadgelink(self.rest_key, name, badge)
         # await ctx.send(f"Badge '{created_userbadgelink['name']}' created with ID {created_userbadgelink['id']}!")
         await ctx.send(f"UserBadgeLink {created_userbadgelink} created")
 

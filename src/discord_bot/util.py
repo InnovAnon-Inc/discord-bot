@@ -143,3 +143,16 @@ def get_secrets(json: List[Dict[str, str]]) -> List[str]:
     """ map get_secret() over the list """
 
     return list(map(get_secret, json))
+
+@typechecked
+def get_badge_id(json: Dict[str, int]) -> int:
+    """ get the value associated with the `badge_id` key """
+
+    return json['badge_id']
+
+
+@typechecked
+def get_badge_ids(json: List[Dict[str, int]]) -> List[int]:
+    """ map get_badge_id() over the list """
+
+    return list(map(get_badge_id, json))
