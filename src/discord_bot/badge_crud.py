@@ -1,85 +1,73 @@
-from os import getenv
-from typing import List
-from random import choice
-from typing import Dict
-from typing import Any
-from typing import Union
-from aiohttp import ClientSession
-from urllib.parse import urlencode
+""" Badge Table CRUD """
 
-from discord import Intents
-from discord import Message
-from discord.ext.commands import Bot
-from discord.ext.commands import has_role
-from discord.utils import get
-from discord.utils import find
-from discord.ui import Button
-from discord import ButtonStyle
-from discord import Interaction
-from discord import Member
-from discord.ui import View
+from typing import List
+
 from structlog import get_logger
 from typeguard import typechecked
-from discord.ext.commands.errors import CheckFailure
 
-from .hello import hellomain
-from .types import P
+from .api import api_create, api_delete, api_get, api_gets, api_update
 from .log import trace
-from .log import logerror
-
-from .types import JSON
-from .types import HEADERS
-from .types import DATA
-from .types import PARAMS
-from .api import api_get
-from .api import api_gets
-from .api import api_create
-from .api import api_delete
-from .api import api_update
+from .types import DATA, JSON, PARAMS
 from .util import get_names
 
 logger = get_logger()
 
-##
-# Game CRUD
-##
+# @logerror(logger)
 
-#@logerror(logger)
+
 @trace(logger)
 @typechecked
-async def api_get_badges(rest_key:str) -> List[str]:
-    params:PARAMS = {
+async def api_get_badges(rest_key: str) -> List[str]:
+    """ Get the `name` of all registered badges """
+
+    params: PARAMS = {
         'select': 'name',
     }
-    result:JSON = await api_gets(rest_key, 'badge', params)
+    result: JSON = await api_gets(rest_key, 'badge', params)
     return get_names(result)
 
-#@logerror(logger)
+# @logerror(logger)
+
+
 @trace(logger)
 @typechecked
-async def api_get_badge(rest_key:str, name:str) -> JSON:
+async def api_get_badge(rest_key: str, name: str) -> JSON:
+    """ Get all columns of the badge with `name` """
+
     return await api_get(rest_key, 'badge', name)
 
-#@logerror(logger)
+# @logerror(logger)
+
+
 @trace(logger)
 @typechecked
-async def api_create_badge(rest_key:str, name:str) -> str:
-    data:DATA = {
+async def api_create_badge(rest_key: str, name: str) -> str:
+    """ Register a badge """
+
+    data: DATA = {
         'name': name,
     }
     return await api_create(rest_key, 'badge', data)
 
-#@logerror(logger)
+# @logerror(logger)
+
+
 @trace(logger)
 @typechecked
-async def api_delete_badge(rest_key:str, name:str) -> str:
+async def api_delete_badge(rest_key: str, name: str) -> str:
+    """ Unregister a badge """
+
     return await api_delete(rest_key, 'badge', name)
 
-#@logerror(logger)
+# @logerror(logger)
+
+
 @trace(logger)
 @typechecked
-async def api_rename_badge(rest_key:str, name:str, new_name:str) -> str:
-    data:DATA = {
+async def api_rename_badge(rest_key: str, name: str, new_name: str) -> str:
+    """ Change a badge's name """
+
+    data: DATA = {
         'name': new_name,
     }
     return await api_update(rest_key, 'badge', name, data)

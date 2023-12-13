@@ -1,61 +1,43 @@
-from typing import Tuple
-from os import getenv
-from typing import List
-from random import choice
-from typing import Dict
-from typing import Any
-from typing import Union
-from aiohttp import ClientSession
-from urllib.parse import urlencode
+""" simple utility functions """
 
-from discord import Intents
-from discord import Message
-from discord.ext.commands import Bot
-from discord.ext.commands import has_role
+from typing import Dict, List
+
 from discord.utils import get
-from discord.utils import find
-from discord.ui import Button
-from discord import ButtonStyle
-from discord import Interaction
-from discord import Member
-from discord.ui import View
 from structlog import get_logger
 from typeguard import typechecked
-from discord.ext.commands.errors import CheckFailure
 
-from .hello import hellomain
-from .types import P
-from .log import trace
-from .log import logerror
-from .log import logres
-from .log import logargswl
+from .log import logargswl, logerror, logres, trace
 
 logger = get_logger()
+
 
 @logerror(logger)
 @trace(logger)
 @logres(logger)
 @typechecked
-async def is_admin(ctx)->bool:
+async def is_admin(ctx) -> bool:
+    """ return whether the command user has the `admin` role """
+
     # TODO type hints
-    await logger.adebug('is_admin() 1')
     admin_role = get(ctx.guild.roles, name='admin')
-    await logger.adebug('is_admin() 2')
-    result:bool = admin_role in ctx.author.roles
-    await logger.adebug('is_admin() 3')
+    result: bool = admin_role in ctx.author.roles
     return result
+
 
 @logerror(logger)
 @trace(logger)
-#@logargswl(logger, 1)
-#@logres(logger)
+# @logargswl(logger, 1)
+# @logres(logger)
 @typechecked
-async def arg_helper(ctx, n:int)->List[str]:
-    args:List[str] = ctx.message.content.split()
-    cmd :str       = args[0]
-    args           = args[1:]
+async def arg_helper(ctx, n: int) -> List[str]:
+    """ Split the command string """
+
+    args: List[str] = ctx.message.content.split()
+    cmd: str = args[0]
+    args = args[1:]
     if len(args) != n:
-        raise ValueError(f'Command {cmd} expects {n} argument(s), but you gave {len(args)}: {args}')
+        raise ValueError(
+            f'Command {cmd} expects {n} argument(s), but you gave {len(args)}: {args}')
     return args
 
 
@@ -63,24 +45,36 @@ async def arg_helper(ctx, n:int)->List[str]:
 @trace(logger)
 @logres(logger)
 @typechecked
-async def get_arg(ctx)->str:
-    #return ctx.message.content.split(maxsplit=1)[1] # Extract the arg from the command message
-    args:List[str] = await arg_helper(ctx, 1)
+async def get_arg(ctx) -> str:
+    """ Get the argument for a single-argument command """
+
+    # return ctx.message.content.split(maxsplit=1)[1] # Extract the arg from the command message
+    args: List[str] = await arg_helper(ctx, 1)
     return args[0]
+
 
 @logerror(logger)
 @trace(logger)
 @logargswl(logger, 1)
 @logres(logger)
 @typechecked
-async def get_args(ctx, n:int)->List[str]:
-    #args:List[str] = ctx.message.content.split(maxsplit=n)[1:] # Extract n args from the command message
+async def get_args(ctx, n: int) -> List[str]:
+    """ Get the arguments for an n-argument command """
+
+    # Extract n args from the command message
+    # args:List[str] = ctx.message.content.split(maxsplit=n)[1:]
     return await arg_helper(ctx, n)
 
-@typechecked
-def get_name(json:Dict[str,str])->str:
-    return json['name']
 
 @typechecked
-def get_names(json:List[Dict[str,str]])->List[str]:
+def get_name(json: Dict[str, str]) -> str:
+    """ get the value associated with the `name` key """
+
+    return json['name']
+
+
+@typechecked
+def get_names(json: List[Dict[str, str]]) -> List[str]:
+    """ map get_name() over the list """
+
     return list(map(get_name, json))
