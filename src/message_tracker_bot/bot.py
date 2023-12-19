@@ -61,9 +61,9 @@ async def botze(token: str, guild: str, rest_key: str, channel:str, invite_track
     # games_list:JSON = []
 
 
-    await bot.add_cog(BasicCog(bot))
-    await bot.add_cog( TestCog(bot, rest_key, guild, channel))
-    await bot.add_cog(MessageCog(bot, invite_tracker_id))
+    await bot.add_cog(  BasicCog(bot))
+    await bot.add_cog(   TestCog(bot, rest_key, guild, channel))
+    await bot.add_cog(MessageCog(bot, rest_key, invite_tracker_id))
 
 
     return await bot.start(token)

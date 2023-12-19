@@ -15,6 +15,7 @@ from .log import logerror, trace
 from .types import JSON
 from .util import get_arg, get_args, is_admin
 from .cogs import *
+from .user_crud import api_get_user_invite_count, api_set_user_invite_count
 
 logger = get_logger()
 setup_logging()
@@ -29,8 +30,9 @@ class MessageCog(Cog):
     """ Message-related functionality """
 
     @typechecked
-    def __init__(self, bot:Bot, invite_tracker_id:str):
-        self.bot      = bot
+    def __init__(self, bot:Bot, rest_key:str, invite_tracker_id:str):
+        self.bot               = bot
+        self.rest_key          = rest_key
         self.invite_tracker_id = invite_tracker_id
 
     @Cog.listener()
@@ -76,7 +78,9 @@ class MessageCog(Cog):
             print(f"Inviter Invites: {inviter_invites}")
             print(f"Mentioned User ID: {mentioned_user_id}")
 
-            # TODO increment invite count via REST API
+            invite_count:int = await api_get_user_unclaimed_codes(self.rest_key, member_user_id)
+            await api_set_user_unclaimed_codes(self.rest_key, member_user_id, invite_count + 1)
+            
 
         # Handle other cases or do additional processing here
         # ...
