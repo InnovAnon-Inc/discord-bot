@@ -3,6 +3,7 @@
 from functools import wraps
 from sys import version as sysversion
 
+from discord import __version__ as disversion
 from typeguard import typechecked
 
 from .types import CallableVarArgs, P, T, Wrapper
@@ -22,6 +23,17 @@ def hellomain(logger) -> Wrapper:
         return wrapper
     return decorator
 
+@typechecked
+def hellodiscord(logger) -> Wrapper:
+    """ Print discord version """
+    @typechecked
+    def decorator(func:CallableVarArgs) ->CallableVarArgs:
+        @wraps(func)
+        async def wrapper(*args:P.args, **kwargs:P.kwargs)->T:
+            await logger.ainfo("Discord %s", disversion)
+            return await func(*args, **kwargs)
+        return wrapper
+    return decorator
 
 __author__: str = "AI Assistant"
 __copyright__: str = "Copyright 2023, InnovAnon, Inc."

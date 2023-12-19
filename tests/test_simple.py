@@ -8,7 +8,7 @@ sanity check for unit testing capability
 from pytest import main
 from pytest import mark
 
-from discord_bot import *
+from message_tracker_bot import *
 
 #@settings(max_examples=10)
 #@given(number=st.integers(), i=st.integers())

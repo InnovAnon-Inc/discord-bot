@@ -10,7 +10,7 @@ build/
 dist/
 .pytest_cache/
 docs/
-venv
+venv/
 __pycache__
 *.swp
 CHANGELOG*

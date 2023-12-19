@@ -6,7 +6,7 @@ from structlog import get_logger
 from typeguard import typechecked
 
 from .bot import botze
-from .hello import hellomain
+from .hello import hellomain, hellodiscord
 from .log import logerror, trace
 
 logger = get_logger()
@@ -15,6 +15,7 @@ logger = get_logger()
 @logerror(logger)
 @trace(logger)
 @hellomain(logger)
+@hellodiscord(logger)
 @typechecked
 async def main() -> None:
     """
@@ -24,4 +25,6 @@ async def main() -> None:
     token: str = getenv('DISCORD_TOKEN')
     guild: str = getenv('DISCORD_GUILD')
     restk: str = getenv('SUPABASE_KEY')
-    return await botze(token, guild, restk)
+    chann: str = getenv('DISCORD_CHANNEL')
+    invite_tracker_id:str = getenv('INVITE_TRACKER_ID')
+    return await botze(token, guild, restk, chann, invite_tracker_id)

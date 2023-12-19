@@ -36,16 +36,20 @@ source venv/bin/activate
 . .env
 [[ "$DISCORD_TOKEN" ]]
 [[ "$DISCORD_GUILD" ]]
+[[ "$DISCORD_CHANNEL" ]]
 [[ "$SUPABASE_KEY"  ]]
+[[ "$INVITE_TRACKER_ID" ]]
 export DISCORD_TOKEN
 export DISCORD_GUILD
+export DISCORD_CHANNEL
 export SUPABASE_KEY
+export INVITE_TRACKER_ID
 
 echo "installing discord bot module"
 pip install .
 
 echo "running main.py"
-python -m discord_bot
+python -m message_tracker_bot
 
 echo "saving changes to git"
 git add .

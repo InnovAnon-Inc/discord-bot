@@ -1,10 +1,15 @@
 """ simple utility functions """
 
-from typing import Dict, List
+from typing import Dict, List, Iterable
+from string import ascii_letters, digits
 
 from discord.utils import get
+from discord import Role
+from discord.ext.commands import Context
 from structlog import get_logger
 from typeguard import typechecked
+from hypothesis import strategies as st
+from hypothesis.strategies import SearchStrategy
 
 from .log import logargswl, logerror, logres, trace
 
@@ -15,11 +20,10 @@ logger = get_logger()
 @trace(logger)
 @logres(logger)
 @typechecked
-async def is_admin(ctx) -> bool:
+async def is_admin(ctx:Context) -> bool:
     """ return whether the command user has the `admin` role """
 
-    # TODO type hints
-    admin_role = get(ctx.guild.roles, name='admin')
+    admin_role:Role = get(ctx.guild.roles, name='admin')
     result: bool = admin_role in ctx.author.roles
     return result
 
@@ -29,7 +33,7 @@ async def is_admin(ctx) -> bool:
 # @logargswl(logger, 1)
 # @logres(logger)
 @typechecked
-async def arg_helper(ctx, n: int) -> List[str]:
+async def arg_helper(ctx:Context, n: int) -> List[str]:
     """ Split the command string """
 
     args: List[str] = ctx.message.content.split()
@@ -45,7 +49,7 @@ async def arg_helper(ctx, n: int) -> List[str]:
 @trace(logger)
 @logres(logger)
 @typechecked
-async def get_arg(ctx) -> str:
+async def get_arg(ctx:Context) -> str:
     """ Get the argument for a single-argument command """
 
     # return ctx.message.content.split(maxsplit=1)[1] # Extract the arg from the command message
@@ -58,7 +62,7 @@ async def get_arg(ctx) -> str:
 @logargswl(logger, 1)
 @logres(logger)
 @typechecked
-async def get_args(ctx, n: int) -> List[str]:
+async def get_args(ctx:Context, n: int) -> List[str]:
     """ Get the arguments for an n-argument command """
 
     # Extract n args from the command message
@@ -156,3 +160,42 @@ def get_badge_ids(json: List[Dict[str, int]]) -> List[int]:
     """ map get_badge_id() over the list """
 
     return list(map(get_badge_id, json))
+
+@typechecked
+def get_discord_username(ctx:Context)->str:
+    return str(ctx.message.author)
+
+
+
+
+
+@typechecked
+def generate_random_code(length: int) -> str:
+    """
+    Usage example:
+    ```
+    random_code = generate_random_code(10)
+    print(random_code)
+    ```
+    """
+
+    # Define the characters to include in the secret code
+    characters:str = ascii_letters + digits  # includes lowercase letters, uppercase letters, and digits
+
+    # Use Hypothesis to generate a random code of the specified length
+    code_strategy:SearchStrategy = st.text(alphabet=st.characters(whitelist_characters=characters), min_size=length, max_size=length)
+    code:str = st.sampled_from(code_strategy).example()
+
+    return code
+
+@trace(logger)
+@typechecked
+async def send_one_message(ctx:Context, messages:Iterable[str])->str:
+    msg:str = ''
+    for message in messages:
+        await logger.ainfo('- %s', message)
+        msg = '{msg}- {message}\n'
+    await ctx.send(msg, ephemeral=True)
+
+
+
