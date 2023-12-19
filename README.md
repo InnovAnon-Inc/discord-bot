@@ -1,5 +1,5 @@
 # Discord Bot
-Botze Discord Bot for 0xpepesplay
+Botze Discord Bot for Tracking Messages from Invite Tracker
 ==========
 
 [![Tip Me via PayPal](https://img.shields.io/badge/paypal-donate-FF1100.svg?logo=paypal&logoColor=FF1133&style=plastic)](https://www.paypal.me/botze)

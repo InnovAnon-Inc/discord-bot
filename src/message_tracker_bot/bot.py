@@ -46,12 +46,12 @@ class UnfilteredBot(Bot):
 @typechecked
 async def botze(token: str, guild: str, rest_key: str, channel:str, invite_tracker_id:str) -> None:
     """
-    implements the business logic for the 0xpepesplay project
-    by interacting with the REST API
+    scans for messages from InviteTracker
+    and interacts with the REST API
     """
 
     intents: Intents = Intents.default()
-    intents.members = True
+    #intents.members = True
     # allow to get commands from GC
     intents.message_content = True  # v2
     # ChatGPT:
