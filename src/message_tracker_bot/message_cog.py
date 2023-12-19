@@ -33,10 +33,10 @@ class MessageCog(Cog):
         self.bot      = bot
         self.invite_tracker_id = invite_tracker_id
 
-    @commands.Cog.listener()
+    @Cog.listener()
     @logerror(logger)
     @trace(logger)
-    @typechecke
+    @typechecked
     async def on_message(self, message):
 
         # don't process own messages
@@ -75,6 +75,8 @@ class MessageCog(Cog):
             print(f"Inviter: {inviter}")
             print(f"Inviter Invites: {inviter_invites}")
             print(f"Mentioned User ID: {mentioned_user_id}")
+
+            # TODO increment invite count via REST API
 
         # Handle other cases or do additional processing here
         # ...
