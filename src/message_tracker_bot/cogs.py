@@ -3,3 +3,4 @@
 from .basic_cog import *
 from .test_cog import *
 from .message_cog import *
+#from .user_cog import *

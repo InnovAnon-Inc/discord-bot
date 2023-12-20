@@ -27,4 +27,5 @@ async def main() -> None:
     restk: str = getenv('SUPABASE_KEY')
     chann: str = getenv('DISCORD_CHANNEL')
     invite_tracker_id:str = getenv('INVITE_TRACKER_ID')
-    return await botze(token, guild, restk, chann, invite_tracker_id)
+    print(f'invite_tracker_id: {invite_tracker_id}')
+    return await botze(token, guild, restk, chann, int(invite_tracker_id))
