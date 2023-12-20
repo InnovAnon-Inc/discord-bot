@@ -126,8 +126,9 @@ async def botze(token: str, guild: str, rest_key: str, channel:str, invite_track
             await logger.ainfo("Inviter Invites: %s", inviter_invites)
             #await logger.ainfo("Mentioned User ID: %s", mentioned_user_id)
 
-            invite_count:int = await api_get_user_unclaimed_codes(rest_key, inviter)
-            await api_set_user_unclaimed_codes(rest_key, inviter, invite_count + 1)
+            #invite_count:int = await api_get_user_unclaimed_codes(rest_key, inviter)
+            #await api_set_user_unclaimed_codes(rest_key, inviter, invite_count + 1)
+            await api_set_user_unclaimed_codes(rest_key, inviter, inviter_invites)
             return
 
         await logger.ainfo("unexpected message format: %s", message.content)
