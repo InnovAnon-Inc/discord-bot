@@ -63,7 +63,10 @@ class BasicCog(Cog):
             message = error
 
         await ctx.send(message, ephemeral=True)
-        await logger.aexception(error)
+        if isinstance(error, Exception):
+            await logger.aexception(error)
+        else:
+            await logger.aerror('Some error: %s', error)
 
     @has_role('admin')
     @command(name='shutdown')
@@ -80,3 +83,10 @@ class BasicCog(Cog):
         await ctx.send('Disconnecting bot')
         return await self.bot.close()
 
+__author__: str = "AI Assistant"
+__copyright__: str = "Copyright 2023, Botze, Inc."
+__license__: str = "Proprietary"
+__version__: str = "1.0"
+__maintainer__: str = "@lmaddox"
+__email__: str = "InnovAnon-Inc@gmx.com"
+__status__: str = "Production"

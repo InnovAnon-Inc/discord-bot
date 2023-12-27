@@ -1,6 +1,6 @@
 """ The bot proper """
 
-from typing import List, Union
+from typing import List, Union, Optional
 
 from discord import ButtonStyle, Intents  # , Interaction, Member, Message
 from discord.ext.commands import Bot, has_role, Context
@@ -10,7 +10,12 @@ from discord.utils import setup_logging
 from discord.ext.commands import Cog
 from structlog import get_logger
 from typeguard import typechecked
-import re
+from re import match as re_match
+from re import Match
+from discord import Button, ButtonStyle, Interaction, Member, Role, TextChannel
+
+from discord.message import Message
+from discord import Embed
 
 from .log import logerror, trace
 from .types import JSON
@@ -21,14 +26,6 @@ from .crud import *
 logger = get_logger()
 setup_logging()
 
-
-# TODO invite tracker
-#invites = {}
-#last = ""
-
-##
-# 0xPepesPlay Bot
-##
 
 @typechecked
 class UnfilteredBot(Bot):
@@ -42,11 +39,12 @@ class UnfilteredBot(Bot):
         ctx:Context = await self.get_context(message)
         await self.invoke(ctx)
 
+pepe_green:int = 0x07c275
 
 @logerror(logger)
 @trace(logger)
 @typechecked
-async def botze(token: str, guild: str, rest_key: str, channel:str, invite_tracker_id:int) -> None:
+async def botze(token: str, guild: str, rest_key: str, channel:int, invite_tracker_id:int) -> None:
     """
     scans for messages from InviteTracker
     and interacts with the REST API
@@ -56,12 +54,7 @@ async def botze(token: str, guild: str, rest_key: str, channel:str, invite_track
     #intents.members = True
     # allow to get commands from GC
     intents.message_content = True  # v2
-    # ChatGPT:
-    # Change the type of bot from discord.ext.commands.Bot to discord.ext.commands.Bot.
-    # This ensures that the event loop is properly managed by the commands.Bot class.
     bot: Bot = UnfilteredBot(intents=intents, command_prefix='?')
-    # games_list:JSON = []
-
 
     await bot.add_cog(  BasicCog(bot))
     await bot.add_cog(   TestCog(bot, rest_key, guild, channel))
@@ -71,21 +64,25 @@ async def botze(token: str, guild: str, rest_key: str, channel:str, invite_track
     @logerror(logger)
     @trace(logger)
     @typechecked
-    async def on_message(message):
+    async def on_message(message:Message)->None:
 
-        # don't process own messages
-        if message.author.id == bot.user.id:
+        if message.author.id == bot.user.id: # don't process own messages
             await logger.adebug("message author id same as bot user id: %s", message.author.id)
             return
 
-        # only process messages from invitetracker bot
         assert isinstance(message.author.id, int)
-        if message.author.id != invite_tracker_id:
+        if message.author.id != invite_tracker_id: # only process messages from invitetracker bot
             #assert message.author.id.strip() != invite_tracker_id.strip()
             await logger.ainfo("%s different than %s", message.author.id, invite_tracker_id)
             await bot.process_commands(message)  # Process commands for bot
             return
 
+        my_channel:TextChannel = bot.get_channel(channel)
+        assert my_channel is not None
+        await logger.ainfo("channel: %s", type(my_channel))
+
+        embed = Embed(title="Message Acknowldged", description="The Invite Tracker Bot sent a message. Parsing it...", color=pepe_green)
+        my_message:Message = await my_channel.send(embed=embed)
 
         # Define the join message format pattern using regular expressions
         #"@<username> has been invited by <user name> and has now <n> invites"
@@ -93,51 +90,75 @@ async def botze(token: str, guild: str, rest_key: str, channel:str, invite_track
         #message.mentions[0].id
         #message.mentions[0].mention
         #join_message_pattern = r"<@(\d+)> has been invited by (\w+#\d+) and has now (\d+) invites"
-        join_message_pattern = r"<@(\d+)> has been invited by (\w+)#\d+ and has now (\d+) invites"
+        join_message_pattern:str = r"<@(\d+)> has been invited by (\w+)#(\d+) and has now (\d+) invites."
+
+        assert(message.content)
 
         # Match the message content against the join message pattern
-        match = re.match(join_message_pattern, message.content)
-        if match:
-            member_id = match.group(1)  # Extract the member ID
-            inviter = match.group(2)  # Extract the inviter
-            inviter_invites = match.group(3)  # Extract the number of invites
+        match:Optional[Match] = re_match(join_message_pattern, message.content)
+        if match is None:
+            await logger.ainfo("unexpected message format: %s", message.content)
+            embed.add_field(name="Unexpected Message Format", value=message.content)
 
-            # Format the expected join message using the extracted information
-            #expected_join_message = join_message_format.format(member_id=member_id, inviter=inviter, inviter_invites=inviter_invites)
+            join_message_pattern = r"<@(\d+)> has been invited by .*"
+            match                = re_match(join_message_pattern, message.content)
+            msg:str              = "No" if match is None else f"Yes: {match.group(1)}"
+            embed.add_field(name="Can match invitee", value=msg)
 
-            # Compare the actual and expected join messages
-            #if message.content == expected_join_message:
-                # The message matches the expected format
-                # Handle the join message here
-            #    pass
+            join_message_pattern = r".* has been invited by (\w+)#.*"
+            match                = re_match(join_message_pattern, message.content)
+            msg                  = "No" if match is None else f"Yes: {match.group(1)}"
+            embed.add_field(name="Can match inviter", value=msg)
 
+            join_message_pattern = r".*#(\d+) and has now .*"
+            match                = re_match(join_message_pattern, message.content)
+            msg                  = "No" if match is None else f"Yes: {match.group(1)}"
+            embed.add_field(name="Can match channel number", value=msg)
 
-            #member_mention = message.mentions[0].mention
-            #inviter = message.content.split(" ")[-4]  # Get the second last word
-            #inviter_invites = int(message.content.split(" ")[-2])  # Get the last word
-    
-            # TODO: Use the extracted information as needed
-            # For example, you can access the user ID of the mentioned user using `message.mentions[0].id`
-            #mentioned_user_id = message.mentions[0].id
+            join_message_pattern = r".* and has now (\d+) invites."
+            match                = re_match(join_message_pattern, message.content)
+            msg                  = "No" if match is None else f"Yes: {match.group(1)}"
+            embed.add_field(name="Can match invite count", value=msg)
 
-            # Print the extracted information
-            #await logger.ainfo("Member Mention: %s", member_mention)
-            await logger.ainfo("Inviter: %s", inviter)
-            await logger.ainfo("Inviter Invites: %s", inviter_invites)
-            #await logger.ainfo("Mentioned User ID: %s", mentioned_user_id)
+            await my_message.edit(embed=embed)
 
-            #invite_count:int = await api_get_user_unclaimed_codes(rest_key, inviter)
-            #await api_set_user_unclaimed_codes(rest_key, inviter, invite_count + 1)
-            await api_set_user_unclaimed_codes(rest_key, inviter, inviter_invites)
             return
 
-        await logger.ainfo("unexpected message format: %s", message.content)
+        member_id      :int = int(match.group(1))
+        inviter        :str =     match.group(2)
+        your_channel   :int = int(match.group(3))
+        inviter_invites:int = int(match.group(4))
 
-        # ChatGPT says this will somehow cause the on_message() event to be triggered
-            
+        # Print the extracted information
+        #await logger.ainfo("Member Mention: %s", member_mention)
+        await logger.ainfo("Inviter: %s", inviter)
+        await logger.ainfo("Inviter Invites: %s", inviter_invites)
+        #await logger.ainfo("Mentioned User ID: %s", mentioned_user_id)
 
-        # Handle other cases or do additional processing here
-        # ...
+        embed.add_field(name="Member ID", value=f"{member_id}")
+        embed.add_field(name="Inviter",   value=f"{inviter}")
+        embed.add_field(name="Channel",   value=f"{your_channel}")
+        embed.add_field(name="Invites",   value=f"{inviter_invites}")
+        await my_message.edit(embed=embed)
 
+        my_user: JSON = await api_get_user(rest_key, inviter)
+        if not my_user:
+            created_user: str = await api_create_user(rest_key, inviter)
+            await logger.ainfo("created user: %s", created_user)
+
+            embed.add_field(name="Register User Result",    value=f"{created_user} (success)")
+            await my_message.edit(embed=embed)
+
+        result:str = await api_set_user_invite_count(rest_key, inviter, inviter_invites)
+        embed.add_field(name="Set Invite Count Result", value=f"{result} (success)")
+        await my_message.edit(embed=embed)
 
     return await bot.start(token)
+
+__author__: str = "AI Assistant"
+__copyright__: str = "Copyright 2023, Botze, Inc."
+__license__: str = "Proprietary"
+__version__: str = "1.0"
+__maintainer__: str = "@lmaddox"
+__email__: str = "InnovAnon-Inc@gmx.com"
+__status__: str = "Production"

@@ -23,7 +23,7 @@ class TestCog(Cog):
     """ Test-related commands """
 
     @typechecked
-    def __init__(self, bot:Bot, rest_key:str, guild:str, channel:str):
+    def __init__(self, bot:Bot, rest_key:str, guild:str, channel:int):
         self.bot      = bot
         self.rest_key = rest_key
         self.guild    = guild
@@ -43,3 +43,10 @@ class TestCog(Cog):
 
 
 
+__author__: str = "AI Assistant"
+__copyright__: str = "Copyright 2023, Botze, Inc."
+__license__: str = "Proprietary"
+__version__: str = "1.0"
+__maintainer__: str = "@lmaddox"
+__email__: str = "InnovAnon-Inc@gmx.com"
+__status__: str = "Production"
