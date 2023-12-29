@@ -15,4 +15,4 @@ Botze Discord Bot for Tracking Messages from Invite Tracker
 
 ==========
 
-![Corporate Logo](https://innovanon-inc.github.io/assets/images/logo.gif)
+![Corporate Logo](https://www.0xpepes.com/_next/image?url=%2Flogonew.png)
