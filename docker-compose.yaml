@@ -1,0 +1,10 @@
+version: '3.3'
+services:
+  message_tracker_bot:
+    build: .
+    env_file: .env
+    container_name:  message_tracker_bot
+    #volumes:
+    #  - teamhack:/var/teamhack/etc:ro
+    restart:         always
+

@@ -1,0 +1,14 @@
+[Unit]
+Description=Message Tracker Bot
+After=network.target
+
+[Service]
+Type=simple
+User=0xpepes
+WorkingDirectory=/home/0xpepes/dev/py/invite-tracker-supabase-glue-bot
+ExecStart=/bin/bash -c 'source venv/bin/activate && python install . && python -m message_tracker_bot'
+EnvironmentFile=/home/0xpepes/dev/py/invite-tracker-supabase-glue-bot/.env
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

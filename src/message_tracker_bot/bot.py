@@ -141,16 +141,26 @@ async def botze(token: str, guild: str, rest_key: str, channel:int, invite_track
         embed.add_field(name="Invites",   value=f"{inviter_invites}")
         await my_message.edit(embed=embed)
 
+        await logger.ainfo("getting user: %s", inviter)
         my_user: JSON = await api_get_user(rest_key, inviter)
         if not my_user:
+            await logger.ainfo("creating user: %s", created_user)
             created_user: str = await api_create_user(rest_key, inviter)
             await logger.ainfo("created user: %s", created_user)
 
             embed.add_field(name="Register User Result",    value=f"{created_user} (success)")
             await my_message.edit(embed=embed)
+        else:
+            await logger.ainfo("user exists: %s", my_user)
 
         result:str = await api_set_user_invite_count(rest_key, inviter, inviter_invites)
         embed.add_field(name="Set Invite Count Result", value=f"{result} (success)")
+        await logger.ainfo("Set Invite Count Result: %s", result)
+
+        used_invites:int = my_user['used_invites']
+        unclaimed_codes:int = inviter_invites - used_invites
+        await api_set_user_unclaimed_codes(rest_key, inviter, unclaimed_codes)
+
         await my_message.edit(embed=embed)
 
     return await bot.start(token)
